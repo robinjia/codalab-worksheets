@@ -85,7 +85,7 @@ class TestRunner(object):
             ' '.join(
                 [
                     TestRunner._CODALAB_SERVICE_EXECUTABLE,
-                    'down',
+                    'stop',
                     '--instance-name %s' % self.temp_instance_name,
                 ]
             ),
