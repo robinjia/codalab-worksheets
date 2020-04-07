@@ -189,55 +189,18 @@ def _run_command(
     )
 
 
-# TODO: get rid of this and set up the rest-servers outside test_cli.py and
-# pass them as parameters into here.  Otherwise, there are circular
-# dependencies with calling codalab_service.py.
 @contextmanager
-def temp_instance():
+def remote_instance(remote_host):
     """
     Usage:
-        with temp_instance() as remote:
+        with remote_instance(host) as remote:
             run_command([cl, 'work', remote.home])
             ... do more stuff with new temp instance ...
     """
-    print('Setting up a temporary CodaLab instance')
     # Dockerized instance
     original_worksheet = current_worksheet()
 
-    def get_free_ports(num_ports):
-        import socket
-
-        socks = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for i in range(num_ports)]
-        ports = []
-        for s in socks:
-            s.bind(("", 0))
-        ports = [str(s.getsockname()[1]) for s in socks]
-        for s in socks:
-            s.close()
-        return ports
-
-    rest_port, http_port, mysql_port = get_free_ports(3)
-    temp_instance_name = random_name()
-    try:
-        subprocess.check_output(
-            ' '.join(
-                [
-                    './codalab_service.py',
-                    'start',
-                    '--instance-name %s' % temp_instance_name,
-                    '--rest-port %s' % rest_port,
-                    '--http-port %s' % http_port,
-                    '--mysql-port %s' % mysql_port,
-                    '--version %s' % cl_version,
-                ]
-            ),
-            shell=True,
-        )
-    except subprocess.CalledProcessError as ex:
-        print("Temp instance exception: %s" % ex.output)
-        raise
     # Switch to new host and log in to cache auth token
-    remote_host = 'http://localhost:%s' % rest_port
     remote_worksheet = '%s::' % remote_host
     _run_command([cl, 'logout', remote_worksheet[:-2]])
 
@@ -246,11 +209,6 @@ def temp_instance():
 
     yield CodaLabInstance(
         remote_host, remote_worksheet, env['CODALAB_USERNAME'], env['CODALAB_PASSWORD']
-    )
-
-    subprocess.check_call(
-        ' '.join(['./codalab_service.py', 'down', '--instance-name temp-%s' % temp_instance_name]),
-        shell=True,
     )
 
     _run_command([cl, 'work', original_worksheet])
@@ -266,10 +224,11 @@ class ModuleContext(object):
     https://docs.python.org/2/reference/datamodel.html#with-statement-context-managers
     """
 
-    def __init__(self, instance):
+    def __init__(self, instance, second_instance):
         # These are the temporary worksheets and bundles that need to be
         # cleaned up at the end of the test.
         self.instance = instance
+        self.second_instance = second_instance
         self.worksheets = []
         self.bundles = []
         self.groups = []
@@ -400,13 +359,13 @@ class TestModule(object):
         return [m for m in cls.modules.values() if m.default]
 
     @classmethod
-    def run(cls, tests, instance):
-        """Run the modules named in tests againts instance.
+    def run(cls, tests, instance, second_instance):
+        """Run the modules named in tests against instances.
 
         tests should be a list of strings, each of which is either 'all',
         'default', or the name of an existing test module.
 
-        instance should be a codalab instance to connect to like:
+        Instances should be a CodaLab instance to connect to like:
             - main
             - localhost
             - http://server-domain:2900
@@ -444,7 +403,7 @@ class TestModule(object):
             if module.description is not None:
                 print(Colorizer.yellow("[*][*] DESCRIPTION: %s" % module.description))
 
-            with ModuleContext(instance) as ctx:
+            with ModuleContext(instance, second_instance) as ctx:
                 module.func(ctx)
 
             if ctx.error:
@@ -1353,13 +1312,14 @@ def test(ctx):
     wait(_run_command([cl, 'run', 'ping -c 1 google.com', '--request-network']), 0)
 
 
-# TODO: can't do this test until we can pass in another CodaLab instance.
-@TestModule.register('copy', default=False)
+@TestModule.register('copy')
 def test(ctx):
+    # TODO: remove below -tony
+    print('Tony - Testing copy')
     """Test copying between instances."""
     source_worksheet = current_worksheet()
 
-    with temp_instance() as remote:
+    with remote_instance(ctx.second_instance) as remote:
         remote_worksheet = remote.home
         _run_command([cl, 'work', remote_worksheet])
 
@@ -1747,9 +1707,15 @@ if __name__ == '__main__':
         default='localhost',
     )
     parser.add_argument(
+        '--second-instance',
+        type=str,
+        help='Another CodaLab instance used for tests that require a second instance, defaults to "localhost"',
+        default='localhost',
+    )
+    parser.add_argument(
         '--cl-version',
         type=str,
-        help='Codalab version to use for multi-instance tests, defaults to "latest"',
+        help='CodaLab version to use for multi-instance tests, defaults to "latest"',
         default='latest',
     )
     parser.add_argument(
@@ -1760,9 +1726,10 @@ if __name__ == '__main__':
         choices=list(TestModule.modules.keys()) + ['all', 'default'],
         help='Tests to run from: {%(choices)s}',
     )
+
     args = parser.parse_args()
     cl = args.cl_executable
     cl_version = args.cl_version
-    success = TestModule.run(args.tests, args.instance)
+    success = TestModule.run(args.tests, args.instance, args.second_instance)
     if not success:
         sys.exit(1)
