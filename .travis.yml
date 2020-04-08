@@ -40,7 +40,7 @@ jobs:
         # Make sure restarting worker doesn't cause any issues (ie in serialization/deserialization)
         # TODO: check below -tony
         # - docker restart codalab_worker_1 && python3 codalab_service.py test run --version ${TRAVIS_BRANCH}
-        - docker restart codalab_worker_1 &&  python3 test_runner.py --version ${TRAVIS_BRANCH} run
+        - docker restart codalab_worker_1 && python3 test_runner.py --version ${TRAVIS_BRANCH} run
         - docker stop codalab_worker_1
         - python3 codalab_service.py start --services worker --version ${TRAVIS_BRANCH} --shared-file-system
         # TODO: check below -tony
