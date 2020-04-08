@@ -7,6 +7,7 @@ import random
 import string
 import subprocess
 import sys
+import time
 
 
 class TestRunner(object):
@@ -77,6 +78,7 @@ class TestRunner(object):
                 self.instance, self.temp_instance, ' '.join(self.tests)
             )
         )
+        time.sleep(300)
         # subprocess.check_call(
         #     TestRunner.wait_for_service(
         #         self.instance,
