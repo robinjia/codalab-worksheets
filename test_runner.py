@@ -78,7 +78,7 @@ class TestRunner(object):
                 self.instance, self.temp_instance, ' '.join(self.tests)
             )
         )
-        time.sleep(300)
+        time.sleep(60)
         # subprocess.check_call(
         #     TestRunner.wait_for_service(
         #         self.instance,
