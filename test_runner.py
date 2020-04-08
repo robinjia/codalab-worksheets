@@ -77,12 +77,18 @@ class TestRunner(object):
                 self.instance, self.temp_instance, ' '.join(self.tests)
             )
         )
+        # subprocess.check_call(
+        #     TestRunner.wait_for_service(
+        #         self.instance,
+        #         'python3 test_cli.py --instance {} --second-instance {} {}'.format(
+        #             self.instance, self.temp_instance, ' '.join(self.tests)
+        #         ),
+        #     ),
+        #     shell=True,
+        # )
         subprocess.check_call(
-            TestRunner.wait_for_service(
-                self.instance,
-                'python3 test_cli.py --instance {} --second-instance {} {}'.format(
-                    self.instance, self.temp_instance, ' '.join(self.tests)
-                ),
+            'python3 test_cli.py --instance {} --second-instance {} {}'.format(
+                self.instance, self.temp_instance, ' '.join(self.tests)
             ),
             shell=True,
         )
