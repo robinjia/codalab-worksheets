@@ -702,44 +702,61 @@ class BundleModel(object):
                     )
                 )
                 dependencies_dict[key] = uuid
-            query = (
-                select(
-                    [
-                        cl_bundle.c.uuid,
-                        # Concatenate key (child_path) and uuid (parent_uuid) to be "key:uuid"
-                        func.group_concat(
-                            func.concat_ws(
-                                ':',
-                                cl_bundle_dependency.c.child_path,
-                                cl_bundle_dependency.c.parent_uuid,
-                            )
-                        ).label('concat_dependencies'),
-                    ]
-                )
-                .select_from(
-                    cl_bundle.join(
-                        cl_bundle_dependency, cl_bundle_dependency.c.child_uuid == cl_bundle.c.uuid
-                    )
-                )
-                .where(
-                    and_(
-                        cl_bundle.c.owner_id == user_id,
-                        cl_bundle.c.command == command,
-                        or_(*dep_clause),
-                    )
-                )
-                .group_by(cl_bundle_dependency.c.child_uuid)
-                # Ensure the order of the returning bundles will be in the order of they were created.
-                .order_by(cl_bundle.c.id)
+
+            # Select bundles that has the given command from the bundle table
+            filter_on_command = (
+                select([cl_bundle.c.uuid, cl_bundle.c.id])
+                .select_from(cl_bundle)
+                .where(and_(cl_bundle.c.command == command, cl_bundle.c.owner_id == user_id))
+                .alias("filter_on_command")
             )
 
+            if len(dependencies) == 0:
+                query = (
+                    select([filter_on_command.c.uuid])
+                    .select_from(filter_on_command)
+                    .where(
+                        filter_on_command.c.uuid.notin_(
+                            select([cl_bundle_dependency.c.child_uuid]).select_from(
+                                cl_bundle_dependency
+                            )
+                        )
+                    )
+                    .order_by(filter_on_command.c.id)
+                )
+            else:
+                query = (
+                    select(
+                        [
+                            filter_on_command.c.uuid,
+                            # Concatenate key (child_path) and uuid (parent_uuid) to be "key:uuid"
+                            func.group_concat(
+                                func.concat_ws(
+                                    ':',
+                                    cl_bundle_dependency.c.child_path,
+                                    cl_bundle_dependency.c.parent_uuid,
+                                )
+                            ).label('concat_dependencies'),
+                        ]
+                    )
+                    .select_from(
+                        filter_on_command.join(
+                            cl_bundle_dependency,
+                            cl_bundle_dependency.c.child_uuid == filter_on_command.c.uuid,
+                        )
+                    )
+                    .where(or_(*dep_clause))
+                    .group_by(cl_bundle_dependency.c.child_uuid)
+                    # Ensure the order of the returning bundles will be in the order of they were created.
+                    .order_by(cl_bundle_dependency.c.id)
+                )
+
             rows = connection.execute(query).fetchall()
-            logger.info("rows = {}".format(rows))
             if len(dependencies) == 0:
                 result = [row[0] for row in rows]
             else:
                 result = []
-                for uuid, concat in rows:
+                for matched_uuid, concat in rows:
                     dep_dict = {}
                     deps = concat.split(',')
                     if len(deps) != len(dependencies):
@@ -748,8 +765,7 @@ class BundleModel(object):
                         key, uuid = dep.split(':')
                         dep_dict[key] = uuid
                     if dep_dict == dependencies_dict:
-                        result.append(uuid)
-            logger.info("results = {}".format(result))
+                        result.append(matched_uuid)
 
             return result
 
