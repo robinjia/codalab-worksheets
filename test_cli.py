@@ -1730,6 +1730,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     cl = args.cl_executable
     cl_version = args.cl_version
+    raise Exception('Tony in here...')
     success = TestModule.run(args.tests, args.instance, args.second_instance)
     if not success:
         sys.exit(1)
