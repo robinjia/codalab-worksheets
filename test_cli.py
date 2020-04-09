@@ -370,6 +370,8 @@ class TestModule(object):
             - localhost
             - http://server-domain:2900
         """
+        # TODO: Tony here
+        sys.exit(0)
         # TODO: remove the following -tony
         print('4. Tony Running...')
         # Might prompt user for password
@@ -1732,7 +1734,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     cl = args.cl_executable
     cl_version = args.cl_version
-    sys.exit(0)
     success = TestModule.run(args.tests, args.instance, args.second_instance)
     if not success:
         sys.exit(1)
