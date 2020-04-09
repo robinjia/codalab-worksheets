@@ -370,7 +370,6 @@ class TestModule(object):
             - localhost
             - http://server-domain:2900
         """
-        raise Exception('Tony in here...')
         # Might prompt user for password
         subprocess.call([cl, 'work', '%s::' % instance])
 
@@ -395,6 +394,7 @@ class TestModule(object):
                 )
             )
         )
+        raise Exception('Tony in here...')
 
         # Run modules, continuing onto the next test module regardless of
         # failure
