@@ -100,8 +100,7 @@ class TestRunner(object):
                 ]
             )
         )
-        # TODO: Tony here
-        sys.exit(0)
+
         try:
             subprocess.check_output(
                 ' '.join(
@@ -119,6 +118,8 @@ class TestRunner(object):
             print('Exception while executing tests: %s' % ex.output)
             raise
 
+        # TODO: Tony here
+        sys.exit(0)
         # subprocess.check_call(
         #     'python3 test_cli.py --instance {} --second-instance {} {}'.format(
         #         self.instance, self.temp_instance, ' '.join(self.tests)
