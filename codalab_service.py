@@ -665,6 +665,9 @@ class CodalabServiceManager(object):
             uid = '0:0'
         else:
             uid = self.args.uid
+        # TODO: Tony here
+        import sys
+        sys.exit(0)
         self._run_compose_cmd(
             ('run --no-deps --rm --user=%s ' % uid)
             + service
