@@ -114,7 +114,7 @@ class TestRunner(object):
             #     ),
             #     shell=True,
             # )
-            subprocess.check_call(
+            subprocess.check_output(
                 'python3 test_cli.py --instance {} --second-instance {} {}'.format(
                     self.instance, self.temp_instance, ' '.join(self.tests)
                 ),
