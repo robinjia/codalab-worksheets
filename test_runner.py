@@ -7,7 +7,6 @@ import random
 import string
 import subprocess
 import sys
-import time
 
 
 class TestRunner(object):
@@ -35,6 +34,7 @@ class TestRunner(object):
                 rest_port, http_port, mysql_port
             )
         )
+        raise Exception('exception')
         # mysql_port = 3306  # Hardcoded for now
         instance = 'http://localhost:%s' % rest_port
         try:
