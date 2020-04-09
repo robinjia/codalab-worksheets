@@ -560,8 +560,6 @@ class CodalabServiceManager(object):
         elif command == 'delete':
             self._run_compose_cmd('down --remove-orphans -v')
         elif command == 'test':
-            # TODO: Tony here
-            sys.exit(0)
             self.run_tests()
         else:
             raise Exception('Bad command: ' + command)

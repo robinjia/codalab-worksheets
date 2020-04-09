@@ -34,6 +34,8 @@ class TestRunner(object):
                 rest_port, http_port, mysql_port
             )
         )
+        # TODO: Tony here
+        sys.exit(0)
         # mysql_port = 3306  # Hardcoded for now
         instance = 'http://localhost:%s' % rest_port
         try:
