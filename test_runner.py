@@ -104,7 +104,6 @@ class TestRunner(object):
         except subprocess.CalledProcessError as ex:
             print('Exception while executing tests: %s' % ex.output)
             raise
-        raise Exception('exception')
 
         # subprocess.check_call(
         #     'python3 test_cli.py --instance {} --second-instance {} {}'.format(
