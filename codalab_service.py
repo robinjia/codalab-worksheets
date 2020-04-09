@@ -773,14 +773,14 @@ class CodalabServiceManager(object):
                 self.args.rest_port, self.args.second_instance, ' '.join(self.args.tests)
             )
         )
-        raise Exception("Tony here now")
         self.run_service_cmd(
             self.wait_rest_server(
-                'python3 test_cli.py --instance http://rest-server:{} --second-instance {} {}'.format(
+                'tony python3 test_cli.py --instance http://rest-server:{} --second-instance {} {}'.format(
                     self.args.rest_port, self.args.second_instance, ' '.join(self.args.tests)
                 )
             )
         )
+        raise Exception("Tony here now")
 
     def pull_images(self):
         for image in self.SERVICE_IMAGES:
