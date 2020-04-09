@@ -88,6 +88,17 @@ class TestRunner(object):
         #     ),
         #     shell=True,
         # )
+        print(
+            ' '.join(
+                [
+                    TestRunner._CODALAB_SERVICE_EXECUTABLE,
+                    'test',
+                    '--version %s' % version,
+                    '--second-instance %s' % self.temp_instance,
+                    ' '.join(self.tests),
+                ]
+            )
+        )
         try:
             subprocess.check_output(
                 ' '.join(
