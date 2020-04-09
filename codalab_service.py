@@ -780,7 +780,6 @@ class CodalabServiceManager(object):
                 )
             )
         )
-        raise Exception("Tony here now")
 
     def pull_images(self):
         for image in self.SERVICE_IMAGES:
