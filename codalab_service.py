@@ -665,9 +665,6 @@ class CodalabServiceManager(object):
             uid = '0:0'
         else:
             uid = self.args.uid
-        # TODO: Tony here
-        import sys
-        sys.exit(0)
         self._run_compose_cmd(
             ('run --no-deps --rm --user=%s ' % uid)
             + service
@@ -776,6 +773,9 @@ class CodalabServiceManager(object):
                 self.args.rest_port, self.args.second_instance, ' '.join(self.args.tests)
             )
         )
+        # TODO: Tony here
+        import sys
+        sys.exit(0)
         self.run_service_cmd(
             self.wait_rest_server(
                 'python3 test_cli.py --instance http://rest-server:{} --second-instance {} {}'.format(
