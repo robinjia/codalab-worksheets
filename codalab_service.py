@@ -769,13 +769,13 @@ class CodalabServiceManager(object):
         print_header('Running tests')
         # TODO: remove -tony
         print(
-            'python3 test_cli.py --instance http://rest-server:{} --second-instance {} {}'.format(
+            'tony python3 test_cli.py --instance http://rest-server:{} --second-instance {} {}'.format(
                 self.args.rest_port, self.args.second_instance, ' '.join(self.args.tests)
             )
         )
         self.run_service_cmd(
             self.wait_rest_server(
-                'tony python3 test_cli.py --instance http://rest-server:{} --second-instance {} {}'.format(
+                'python3 test_cli.py --instance http://rest-server:{} --second-instance {} {}'.format(
                     self.args.rest_port, self.args.second_instance, ' '.join(self.args.tests)
                 )
             )
