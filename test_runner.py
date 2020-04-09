@@ -88,12 +88,28 @@ class TestRunner(object):
         #     ),
         #     shell=True,
         # )
-        subprocess.check_call(
-            'python3 test_cli.py --instance {} --second-instance {} {}'.format(
-                self.instance, self.temp_instance, ' '.join(self.tests)
-            ),
-            shell=True,
-        )
+        try:
+            subprocess.check_output(
+                ' '.join(
+                    [
+                        TestRunner._CODALAB_SERVICE_EXECUTABLE,
+                        'test',
+                        '--version %s' % version,
+                        '--second-instance %s' % self.temp_instance,
+                        ' '.join(self.tests),
+                    ]
+                ),
+                shell=True,
+            )
+        except subprocess.CalledProcessError as ex:
+            print('Exception while executing tests: %s' % ex.output)
+            raise
+        # subprocess.check_call(
+        #     'python3 test_cli.py --instance {} --second-instance {} {}'.format(
+        #         self.instance, self.temp_instance, ' '.join(self.tests)
+        #     ),
+        #     shell=True,
+        # )
         self._cleanup()
 
     def _cleanup(self):
