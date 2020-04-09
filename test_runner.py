@@ -114,12 +114,7 @@ class TestRunner(object):
             #     ),
             #     shell=True,
             # )
-            subprocess.check_output(
-                'python3 test_cli.py --instance {} --second-instance {} {}'.format(
-                    self.instance, self.temp_instance, ' '.join(self.tests)
-                ),
-                shell=True,
-            )
+            subprocess.check_output('cl workers', shell=True)
         except subprocess.CalledProcessError as ex:
             print('Exception while executing tests: %s' % ex.output)
             raise
