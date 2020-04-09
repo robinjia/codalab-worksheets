@@ -102,15 +102,21 @@ class TestRunner(object):
         )
 
         try:
-            subprocess.check_output(
-                ' '.join(
-                    [
-                        TestRunner._CODALAB_SERVICE_EXECUTABLE,
-                        'test',
-                        '--version %s' % version,
-                        '--second-instance %s' % self.temp_instance,
-                        ' '.join(self.tests),
-                    ]
+            # subprocess.check_output(
+            #     ' '.join(
+            #         [
+            #             TestRunner._CODALAB_SERVICE_EXECUTABLE,
+            #             'test',
+            #             '--version %s' % version,
+            #             '--second-instance %s' % self.temp_instance,
+            #             ' '.join(self.tests),
+            #         ]
+            #     ),
+            #     shell=True,
+            # )
+            subprocess.check_call(
+                'python3 test_cli.py --instance {} --second-instance {} {}'.format(
+                    self.instance, self.temp_instance, ' '.join(self.tests)
                 ),
                 shell=True,
             )
