@@ -643,7 +643,7 @@ class CodalabServiceManager(object):
                 success = popen.returncode == 0
                 if not success:
                     # TODO: undo this below -tony
-                    print('errored in docker run_compose_cmd -tony')
+                    print('2. errored in docker run_compose_cmd -tony')
                     # raise Exception('Command exited with code {}'.format(popen.returncode))
             except subprocess.CalledProcessError as e:
                 print(

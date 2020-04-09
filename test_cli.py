@@ -370,6 +370,8 @@ class TestModule(object):
             - localhost
             - http://server-domain:2900
         """
+        # TODO: remove the following -tony
+        print('4. Tony Running...')
         # Might prompt user for password
         subprocess.call([cl, 'work', '%s::' % instance])
 

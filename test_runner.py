@@ -30,7 +30,7 @@ class TestRunner(object):
         rest_port, http_port, mysql_port = get_free_ports(3)
         # TODO: delete -tony
         print(
-            'Tony rest_port: {}, http_port: {}, mysql_port: {}'.format(
+            '1. Tony rest_port: {}, http_port: {}, mysql_port: {}'.format(
                 rest_port, http_port, mysql_port
             )
         )
@@ -74,11 +74,11 @@ class TestRunner(object):
     def run(self):
         print('Running tests on version {}...'.format(version))
         # TODO: remove -tony
-        print(
-            'python3 test_cli.py --instance {} --second-instance {} {}'.format(
-                self.instance, self.temp_instance, ' '.join(self.tests)
-            )
-        )
+        # print(
+        #     'python3 test_cli.py --instance {} --second-instance {} {}'.format(
+        #         self.instance, self.temp_instance, ' '.join(self.tests)
+        #     )
+        # )
         # subprocess.check_call(
         #     TestRunner.wait_for_service(
         #         self.instance,
@@ -89,7 +89,8 @@ class TestRunner(object):
         #     shell=True,
         # )
         print(
-            ' '.join(
+            '3. '
+            + ' '.join(
                 [
                     TestRunner._CODALAB_SERVICE_EXECUTABLE,
                     'test',
