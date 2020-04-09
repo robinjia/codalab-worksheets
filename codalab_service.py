@@ -399,7 +399,12 @@ class CodalabArgs(object):
                 choices=list(TestModule.modules.keys()) + ['all', 'default'],
                 help='Tests to run. One of: {%(choices)s}',
             )
-            cmd.add_argument('--second-instance', help='Second instance used for testing')
+            cmd.add_argument(
+                '--second-instance',
+                type=str,
+                help='Second instance used for testing',
+                default='localhost',
+            )
             cmd.add_argument(
                 '--dev',
                 '-d',
