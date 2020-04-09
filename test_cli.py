@@ -373,7 +373,7 @@ class TestModule(object):
         # TODO: remove the following -tony
         print('4. Tony Running...')
         # Might prompt user for password
-        # subprocess.call([cl, 'work', '%s::' % instance])
+        subprocess.call([cl, 'work', '%s::' % instance])
 
         # Build list of modules to run based on tests
         modules_to_run = []
@@ -396,7 +396,6 @@ class TestModule(object):
                 )
             )
         )
-        raise Exception('Tony in here...')
 
         # Run modules, continuing onto the next test module regardless of
         # failure
@@ -1733,6 +1732,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     cl = args.cl_executable
     cl_version = args.cl_version
+    sys.exit(0)
     success = TestModule.run(args.tests, args.instance, args.second_instance)
     if not success:
         sys.exit(1)
