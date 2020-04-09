@@ -127,7 +127,7 @@ class TestRunner(object):
 
     def _cleanup(self):
         print('Shutting down the temp instance {}...'.format(self.temp_instance_name))
-        subprocess.check_call(
+        subprocess.check_output(
             ' '.join(
                 [
                     TestRunner._CODALAB_SERVICE_EXECUTABLE,

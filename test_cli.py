@@ -373,7 +373,7 @@ class TestModule(object):
         # TODO: remove the following -tony
         print('4. Tony Running...')
         # Might prompt user for password
-        subprocess.call([cl, 'work', '%s::' % instance])
+        # subprocess.call([cl, 'work', '%s::' % instance])
 
         # Build list of modules to run based on tests
         modules_to_run = []
