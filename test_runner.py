@@ -55,8 +55,6 @@ class TestRunner(object):
             print('Temp instance exception: %s' % ex.output)
             raise
 
-        # TODO: Tony here
-        sys.exit(0)
         # Wait for the temp instance to be up
         TestRunner.wait_for_service(instance, 'echo temp instance {} is up...'.format(instance))
         return instance
@@ -102,6 +100,8 @@ class TestRunner(object):
                 ]
             )
         )
+        # TODO: Tony here
+        sys.exit(0)
         try:
             subprocess.check_output(
                 ' '.join(
