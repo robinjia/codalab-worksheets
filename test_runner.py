@@ -89,7 +89,7 @@ class TestRunner(object):
         #     shell=True,
         # )
         print(
-            '3. '
+            '3. Tony '
             + ' '.join(
                 [
                     TestRunner._CODALAB_SERVICE_EXECUTABLE,

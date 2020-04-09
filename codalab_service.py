@@ -23,6 +23,7 @@ import errno
 import os
 import socket
 import subprocess
+import sys
 
 from test_cli import TestModule
 
@@ -91,6 +92,8 @@ def should_build_image(args, image):
 
 
 def main():
+    # TODO: Tony here
+    sys.exit(0)
     args = CodalabArgs.get_args()
     service_manager = CodalabServiceManager(args)
     service_manager.execute()
@@ -769,13 +772,10 @@ class CodalabServiceManager(object):
         print_header('Running tests')
         # TODO: remove -tony
         print(
-            'tony python3 test_cli.py --instance http://rest-server:{} --second-instance {} {}'.format(
+            '4. Tony python3 test_cli.py --instance http://rest-server:{} --second-instance {} {}'.format(
                 self.args.rest_port, self.args.second_instance, ' '.join(self.args.tests)
             )
         )
-        # TODO: Tony here
-        import sys
-        sys.exit(0)
         self.run_service_cmd(
             self.wait_rest_server(
                 'python3 test_cli.py --instance http://rest-server:{} --second-instance {} {}'.format(
