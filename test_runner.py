@@ -31,7 +31,7 @@ class TestRunner(object):
         rest_port, http_port, mysql_port = get_free_ports(3)
         # TODO: delete -tony
         print(
-            'rest_port: {}, http_port: {}, mysql_port: {}'.format(rest_port, http_port, mysql_port)
+            'Tony rest_port: {}, http_port: {}, mysql_port: {}'.format(rest_port, http_port, mysql_port)
         )
         # mysql_port = 3306  # Hardcoded for now
         instance = 'http://localhost:%s' % rest_port
