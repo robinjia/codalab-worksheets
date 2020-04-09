@@ -34,8 +34,6 @@ class TestRunner(object):
                 rest_port, http_port, mysql_port
             )
         )
-        # TODO: Tony here
-        sys.exit(0)
         # mysql_port = 3306  # Hardcoded for now
         instance = 'http://localhost:%s' % rest_port
         try:
@@ -57,6 +55,8 @@ class TestRunner(object):
             print('Temp instance exception: %s' % ex.output)
             raise
 
+        # TODO: Tony here
+        sys.exit(0)
         # Wait for the temp instance to be up
         TestRunner.wait_for_service(instance, 'echo temp instance {} is up...'.format(instance))
         return instance
