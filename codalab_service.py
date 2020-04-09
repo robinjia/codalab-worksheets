@@ -92,8 +92,6 @@ def should_build_image(args, image):
 
 
 def main():
-    # TODO: Tony here
-    sys.exit(0)
     args = CodalabArgs.get_args()
     service_manager = CodalabServiceManager(args)
     service_manager.execute()
@@ -562,6 +560,8 @@ class CodalabServiceManager(object):
         elif command == 'delete':
             self._run_compose_cmd('down --remove-orphans -v')
         elif command == 'test':
+            # TODO: Tony here
+            sys.exit(0)
             self.run_tests()
         else:
             raise Exception('Bad command: ' + command)
