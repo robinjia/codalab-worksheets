@@ -790,6 +790,12 @@ class BundleCLI(object):
             help='Operate on this worksheet (%s).' % WORKSHEET_SPEC_FORMAT,
             completer=WorksheetsCompleter,
         ),
+        Commands.Argument(
+            '-m',
+            '--memoize',
+            help='Use a memoized bundle that matches with the given command and dependencies',
+            action='store_true',
+        ),
     ) + WAIT_ARGUMENTS
 
     @staticmethod
@@ -1547,6 +1553,12 @@ class BundleCLI(object):
             Commands.Argument(  # Internal for web FE positioned insert.
                 '-a', '--after_sort_key', help='Insert after this sort_key', completer=NullCompleter
             ),
+            Commands.Argument(
+                '-m',
+                '--memoize',
+                help='Use a memoized bundle that matches with the given command and dependencies',
+                action='store_true',
+            ),
         )
         + Commands.metadata_arguments([RunBundle])
         + EDIT_ARGUMENTS
@@ -1559,16 +1571,26 @@ class BundleCLI(object):
 
         targets = self.resolve_key_targets(client, worksheet_uuid, args.target_spec)
         params = {'worksheet': worksheet_uuid}
+
         if args.after_sort_key:
             params['after_sort_key'] = args.after_sort_key
-        new_bundle = client.create(
-            'bundles',
-            self.derive_bundle(RunBundle.BUNDLE_TYPE, args.command, targets, metadata),
-            params=params,
-        )
-
-        print(new_bundle['uuid'], file=self.stdout)
-        self.wait(client, args, new_bundle['uuid'])
+        if args.memoize:
+            dependencies = [key + ':' + bundle_target.bundle_uuid for key, bundle_target in targets]
+            memoized_bundles = client.fetch(
+                'bundles', params={'command': args.command, 'dependencies': dependencies}
+            )
+            if len(memoized_bundles) > 0:
+                print(memoized_bundles[-1]['uuid'], file=self.stdout)
+            else:
+                print("Cannot find any memoized bundle.", file=self.stdout)
+        else:
+            new_bundle = client.create(
+                'bundles',
+                self.derive_bundle(RunBundle.BUNDLE_TYPE, args.command, targets, metadata),
+                params=params,
+            )
+            print(new_bundle['uuid'], file=self.stdout)
+            self.wait(client, args, new_bundle['uuid'])
 
     @Commands.command(
         'docker',
@@ -2638,6 +2660,7 @@ class BundleCLI(object):
             args.shadow,
             args.dry_run,
             metadata_override=metadata,
+            memoize=args.memoize,
         )
         for (old, new) in plan:
             print(

@@ -49,6 +49,7 @@ def mimic_bundles(
     dry_run,
     metadata_override=None,
     skip_prelude=False,
+    memoize=False,
 ):
     """
     :param JsonApiClient client: client
@@ -147,7 +148,6 @@ def mimic_bundles(
             }
             for dep in old_info['dependencies']
         ]
-
         # If there are no inputs or if we're downstream of any inputs, we need to make a new bundle.
         lone_output = len(old_inputs) == 0 and old_bundle_uuid == old_output
         downstream_of_inputs = any(
@@ -190,8 +190,23 @@ def mimic_bundles(
             new_info['metadata'] = new_metadata
             new_info['dependencies'] = new_dependencies
 
+            # Fetch the memoized bundle if the memoize option is set to be True
+            memoized_bundles = None
+            if memoize:
+                memoized_bundles = client.fetch(
+                    'bundles',
+                    params={
+                        'command': old_info['command'],
+                        'dependencies': [
+                            dep['child_path'] + ':' + dep['parent_uuid'] for dep in new_dependencies
+                        ],
+                    },
+                )
+
             if dry_run:
                 new_info['uuid'] = None
+            elif memoize and len(memoized_bundles) > 0:
+                new_info = memoized_bundles[-1]
             else:
                 if new_info['bundle_type'] not in ('make', 'run'):
                     raise UsageError(
@@ -261,8 +276,6 @@ def mimic_bundles(
 
             prelude_items = []  # The prelude that we're building up
             for item in worksheet_info['items']:
-                just_added = False
-
                 if item['type'] == worksheet_util.TYPE_BUNDLE:
                     old_bundle_uuid = item['bundle']['id']
                     if old_bundle_uuid in old_to_new:
@@ -282,19 +295,20 @@ def mimic_bundles(
                                         data=item2,
                                         params={'uuid': worksheet_uuid},
                                     )
-
-                            # Add the bundle item
-                            client.create(
-                                'worksheet-items',
-                                data={
-                                    'type': worksheet_util.TYPE_BUNDLE,
-                                    'worksheet': JsonApiRelationship('worksheets', worksheet_uuid),
-                                    'bundle': JsonApiRelationship('bundles', new_bundle_uuid),
-                                },
-                                params={'uuid': worksheet_uuid},
-                            )
-                            new_bundle_uuids_added.add(new_bundle_uuid)
-                            just_added = True
+                            if new_bundle_uuid not in new_bundle_uuids_added:
+                                # Add the bundle item
+                                client.create(
+                                    'worksheet-items',
+                                    data={
+                                        'type': worksheet_util.TYPE_BUNDLE,
+                                        'worksheet': JsonApiRelationship(
+                                            'worksheets', worksheet_uuid
+                                        ),
+                                        'bundle': JsonApiRelationship('bundles', new_bundle_uuid),
+                                    },
+                                    params={'uuid': worksheet_uuid},
+                                )
+                                new_bundle_uuids_added.add(new_bundle_uuid)
 
                 if (item['type'] == worksheet_util.TYPE_MARKUP and item['value'] != '') or item[
                     'type'
