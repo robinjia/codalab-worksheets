@@ -37,7 +37,7 @@ class TestRunner(object):
         # mysql_port = 3306  # Hardcoded for now
         instance = 'http://localhost:%s' % rest_port
         try:
-            subprocess.check_output(
+            subprocess.check_call(
                 ' '.join(
                     [
                         TestRunner._CODALAB_SERVICE_EXECUTABLE,
@@ -75,10 +75,11 @@ class TestRunner(object):
             print(
                 'python3 test_cli.py --instance {} --second-instance {} {}'.format(
                     self.instance, self.temp_instance, ' '.join(self.tests)
-                ),
+                )
             )
             subprocess.check_call(
-                'python3 test_cli.py --instance {} --second-instance {} {}'.format(
+                'docker exec -it codalab_rest-server_1 /bin/bash -c "python3 test_cli.py '
+                '--instance {} --second-instance {} {}"'.format(
                     self.instance, self.temp_instance, ' '.join(self.tests)
                 ),
                 shell=True,
@@ -91,7 +92,7 @@ class TestRunner(object):
 
     def _cleanup(self):
         print('Shutting down the temp instance {}...'.format(self.temp_instance_name))
-        subprocess.check_output(
+        subprocess.check_call(
             ' '.join(
                 [
                     TestRunner._CODALAB_SERVICE_EXECUTABLE,

@@ -60,7 +60,8 @@ def print_header(description):
 
 def should_run_service(args, service):
     if service == 'init':
-        print('init so wait for rest-service - args.services: ' + str(args.services))
+        # TODO: -tony
+        print('Tony init so wait for rest-service - args.services: ' + str(args.services))
         return True
 
     # `default` is generally used to bring up everything for local dev or quick testing.
