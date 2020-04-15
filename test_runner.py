@@ -56,8 +56,6 @@ class TestRunner(object):
             print('Temp instance exception: %s' % ex.output)
             raise
 
-        # Wait for the temp instance to be up
-        TestRunner.wait_for_service(instance, 'echo temp instance {} is up...'.format(instance))
         return instance
 
     def __init__(self, instance, tests):
