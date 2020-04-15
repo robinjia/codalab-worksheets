@@ -23,10 +23,13 @@ import errno
 import os
 import socket
 import subprocess
+import sys
+
+from test_cli import TestModule
 
 DEFAULT_SERVICES = ['mysql', 'nginx', 'frontend', 'rest-server', 'bundle-manager', 'worker', 'init']
 
-ALL_SERVICES = DEFAULT_SERVICES + ['monitor', 'worker-manager-cpu', 'worker-manager-gpu']
+ALL_SERVICES = DEFAULT_SERVICES + ['test', 'monitor', 'worker-manager-cpu', 'worker-manager-gpu']
 
 ALL_NO_SERVICES = [
     'no-' + service for service in ALL_SERVICES
@@ -320,9 +323,21 @@ class CodalabArgs(object):
             'delete',
             help='Bring down any existing CodaLab service instances (and delete all non-external data!)',
         )
+        test_cmd = subparsers.add_parser(
+            'test', help='Run the test suite and optionally pick which tests to run'
+        )
 
         # Arguments for every subcommand
-        for cmd in [start_cmd, logs_cmd, pull_cmd, build_cmd, run_cmd, stop_cmd, delete_cmd]:
+        for cmd in [
+            start_cmd,
+            logs_cmd,
+            pull_cmd,
+            build_cmd,
+            run_cmd,
+            stop_cmd,
+            delete_cmd,
+            test_cmd,
+        ]:
             cmd.add_argument(
                 '--dry-run',
                 action='store_true',
@@ -374,6 +389,22 @@ class CodalabArgs(object):
                         \'all\' to include default execution images',
                 choices=CodalabServiceManager.ALL_IMAGES + ['all', 'services'],
                 nargs='*',
+            )
+            cmd.add_argument(
+                (
+                    'tests' if cmd == test_cmd else '--tests'
+                ),  # For the explicit test command make this argument positional
+                metavar='TEST',
+                nargs='+',
+                type=str,
+                choices=list(TestModule.modules.keys()) + ['all', 'default'],
+                help='Tests to run. One of: {%(choices)s}',
+            )
+            cmd.add_argument(
+                '--second-instance',
+                type=str,
+                help='Second instance used for testing',
+                default='localhost',
             )
             cmd.add_argument(
                 '--dev',
@@ -528,6 +559,8 @@ class CodalabServiceManager(object):
             self._run_compose_cmd('stop')
         elif command == 'delete':
             self._run_compose_cmd('down --remove-orphans -v')
+        elif command == 'test':
+            self.run_tests()
         else:
             raise Exception('Bad command: ' + command)
 
@@ -610,7 +643,8 @@ class CodalabServiceManager(object):
                 popen.wait()
                 success = popen.returncode == 0
                 if not success:
-                    print('TODO: Tony undo this later')
+                    # TODO: undo this below -tony
+                    print('2. errored in docker run_compose_cmd -tony')
                     # raise Exception('Command exited with code {}'.format(popen.returncode))
             except subprocess.CalledProcessError as e:
                 print(
@@ -727,7 +761,26 @@ class CodalabServiceManager(object):
         else:
             self.bring_up_service('worker')
 
+        if should_run_service(self.args, 'test'):
+            self.run_tests()
+
         self.bring_up_service('monitor')
+
+    def run_tests(self):
+        print_header('Running tests')
+        # TODO: remove -tony
+        print(
+            '4. Tony python3 test_cli.py --instance http://rest-server:{} --second-instance {} {}'.format(
+                self.args.rest_port, self.args.second_instance, ' '.join(self.args.tests)
+            )
+        )
+        self.run_service_cmd(
+            self.wait_rest_server(
+                'python3 test_cli.py --instance http://rest-server:{} --second-instance {} {}'.format(
+                    self.args.rest_port, self.args.second_instance, ' '.join(self.args.tests)
+                )
+            )
+        )
 
     def pull_images(self):
         for image in self.SERVICE_IMAGES:

@@ -61,7 +61,7 @@ class TestRunner(object):
 
     @staticmethod
     def wait_for_service(instance, cmd):
-        return '/opt/wait-for-it.sh {} -- {}'.format(instance, cmd)
+        return 'bash /opt/wait-for-it.sh {} -- {}'.format(instance, cmd)
 
     def __init__(self, instance, tests):
         self.instance = instance
@@ -72,45 +72,25 @@ class TestRunner(object):
         self.tests = tests
 
     def run(self):
-        print('Running tests on version {}...'.format(version))
-        # TODO: remove -tony
-        # print(
-        #     'python3 test_cli.py --instance {} --second-instance {} {}'.format(
-        #         self.instance, self.temp_instance, ' '.join(self.tests)
-        #     )
-        # )
-        # subprocess.check_call(
-        #     TestRunner.wait_for_service(
-        #         self.instance,
-        #         'python3 test_cli.py --instance {} --second-instance {} {}'.format(
-        #             self.instance, self.temp_instance, ' '.join(self.tests)
-        #         ),
-        #     ),
-        #     shell=True,
-        # )
-        print(
-            '3. Tony '
-            + ' '.join(
-                [
-                    TestRunner._CODALAB_SERVICE_EXECUTABLE,
-                    'test',
-                    '--version %s' % version,
-                    '--second-instance %s' % self.temp_instance,
-                    ' '.join(self.tests),
-                ]
-            )
-        )
+        # TODO: delete the following -tony
+        print('Tony - Running tests on version {}...'.format(version))
 
         try:
-            subprocess.check_output(
-                ' '.join(
-                    [
-                        TestRunner._CODALAB_SERVICE_EXECUTABLE,
-                        'test',
-                        '--version %s' % version,
-                        '--second-instance %s' % self.temp_instance,
-                        ' '.join(self.tests),
-                    ]
+            # TODO: remove -tony
+            print(
+                TestRunner.wait_for_service(
+                    self.instance,
+                    'python3 test_cli.py --instance {} --second-instance {} {}'.format(
+                        self.instance, self.temp_instance, ' '.join(self.tests)
+                    ),
+                ),
+            )
+            subprocess.check_call(
+                TestRunner.wait_for_service(
+                    self.instance,
+                    'python3 test_cli.py --instance {} --second-instance {} {}'.format(
+                        self.instance, self.temp_instance, ' '.join(self.tests)
+                    ),
                 ),
                 shell=True,
             )
@@ -118,13 +98,6 @@ class TestRunner(object):
             print('Exception while executing tests: %s' % ex.output)
             raise
 
-
-        # subprocess.check_call(
-        #     'python3 test_cli.py --instance {} --second-instance {} {}'.format(
-        #         self.instance, self.temp_instance, ' '.join(self.tests)
-        #     ),
-        #     shell=True,
-        # )
         self._cleanup()
 
     def _cleanup(self):
