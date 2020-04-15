@@ -59,6 +59,9 @@ def print_header(description):
 
 
 def should_run_service(args, service):
+    if service == 'init':
+        return True
+
     # `default` is generally used to bring up everything for local dev or quick testing.
     # `default no-worker` is generally used for real deployment since we don't want a worker running on the same machine.
     services = [] if args.services is None else args.services

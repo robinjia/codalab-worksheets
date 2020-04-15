@@ -47,6 +47,7 @@ class TestRunner(object):
                         '--http-port %s' % http_port,
                         '--mysql-port %s' % mysql_port,
                         '--version %s' % version,
+                        '--services default',
                     ]
                 ),
                 shell=True,
@@ -58,10 +59,6 @@ class TestRunner(object):
         # Wait for the temp instance to be up
         TestRunner.wait_for_service(instance, 'echo temp instance {} is up...'.format(instance))
         return instance
-
-    @staticmethod
-    def wait_for_service(instance, cmd):
-        return 'bash /opt/wait-for-it.sh {} -- {}'.format(instance, cmd)
 
     def __init__(self, instance, tests):
         self.instance = instance
@@ -78,19 +75,13 @@ class TestRunner(object):
         try:
             # TODO: remove -tony
             print(
-                TestRunner.wait_for_service(
-                    self.instance,
-                    'python3 test_cli.py --instance {} --second-instance {} {}'.format(
-                        self.instance, self.temp_instance, ' '.join(self.tests)
-                    ),
+                'python3 test_cli.py --instance {} --second-instance {} {}'.format(
+                    self.instance, self.temp_instance, ' '.join(self.tests)
                 ),
             )
             subprocess.check_call(
-                TestRunner.wait_for_service(
-                    self.instance,
-                    'python3 test_cli.py --instance {} --second-instance {} {}'.format(
-                        self.instance, self.temp_instance, ' '.join(self.tests)
-                    ),
+                'python3 test_cli.py --instance {} --second-instance {} {}'.format(
+                    self.instance, self.temp_instance, ' '.join(self.tests)
                 ),
                 shell=True,
             )
