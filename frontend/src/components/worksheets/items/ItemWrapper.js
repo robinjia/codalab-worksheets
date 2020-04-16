@@ -22,6 +22,10 @@ class ItemWrapper extends React.Component {
         showNewText: false,
     };
 
+    componentDidMount() {
+        console.log('componentDidMount ItemWrapper');
+    }
+
     render() {
         const {
             children,

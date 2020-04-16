@@ -89,6 +89,7 @@ class Worksheet extends React.Component {
     }
 
     fetch(props) {
+        console.log('fetching');
         // Set defaults
         props = props || {};
         props.success = props.success || function(data) {};
@@ -427,6 +428,7 @@ class Worksheet extends React.Component {
     };
 
     onAsyncItemLoad = (focusIndex, item) => {
+        console.log('onAsyncItemLoad');
         this.setState({
             ws: {
                 ...this.state.ws,
@@ -1097,6 +1099,7 @@ class Worksheet extends React.Component {
         rawIndexAfterEditMode,
         { moveIndex = false, textDeleted = false } = {},
     ) => {
+        console.log('reloadWorksheet called');
         if (partialUpdateItems === undefined) {
             $('#update_progress').show();
             this.setState({ updating: true });

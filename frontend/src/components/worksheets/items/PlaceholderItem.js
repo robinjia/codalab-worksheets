@@ -1,4 +1,4 @@
-import React, { useState, useEffect, forwardRef } from 'react';
+import React, { useState, useEffect, useCallback, forwardRef } from 'react';
 import $ from 'jquery';
 import queryString from 'query-string';
 import './PlaceholderItem.scss';
@@ -38,15 +38,13 @@ export default forwardRef((props, ref) => {
             try {
                 const { items } = await fetchData({ directive, worksheetUUID });
                 setItem(items.length === 0 ? null : items[0]);
-                if (items.length > 0) {
-                    onAsyncItemLoad(items[0]);
-                }
+                // onAsyncItemLoadCallback();
             } catch (e) {
                 console.error(e);
                 setError(e);
             }
         })();
-    }, [directive, worksheetUUID, onAsyncItemLoad]);
+    }, [directive, worksheetUUID]);
     if (error) {
         return <div ref={ref}>Error loading item.</div>;
     }

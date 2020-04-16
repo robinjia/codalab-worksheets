@@ -26,14 +26,14 @@ export const BLOCK_TO_COMPONENT = {
     placeholder_block: PlaceholderItem,
 };
 
-// Create a worksheet item based on props and add it to worksheet_items.
+// Returns the corresponding worksheet item based on props.
 // - item: information about the table to display
 // - index: integer representing the index in the list of items
 // - focused: whether this item has the focus
 // - canEdit: whether we're allowed to edit this item
 // - setFocus: call back to select this item
 // - updateWorksheetSubFocusIndex: call back to notify parent of which row is selected (for tables)
-const addWorksheetItems = function(props, worksheet_items, prevItem, afterItem) {
+const getWorksheetItem = function(props, prevItem, afterItem) {
     var item = props.item;
 
     // Determine URL corresponding to item.
@@ -46,23 +46,16 @@ const addWorksheetItems = function(props, worksheet_items, prevItem, afterItem) 
         url = '/bundles/' + item.bundles_spec.bundle_infos[0].uuid;
     if (item.subworksheet_info) url = '/worksheets/' + item.subworksheet_info.uuid;
 
-    props.key = props.ref = 'item' + props.focusIndex;
+    props.key = 'item' + props.focusIndex;
     props.url = url;
     props.prevItem = prevItem;
 
-    const constructor = BLOCK_TO_COMPONENT[item.mode];
-
-    let elem;
-    if (constructor) {
-        elem = React.createElement(constructor, props);
-    } else {
-        elem = React.createElement(
-            'div',
-            null,
-            React.createElement('strong', null, 'Internal error: ', item.mode),
-        );
+    // let Comp = BLOCK_TO_COMPONENT[item.mode] || (() => );
+    if (item.mode === 'placeholder_block') {
+        console.log('placeholder block rendeirng parent', props);
+        // Comp = (props) => <Comp key={props.key} ref={props.ref} worksheetUUID={props.worksheetUUID} onAsyncItemLoad={props.onAsyncItemLoad} />;
     }
-    worksheet_items.push(
+    return (
         <ItemWrapper
             prevItem={prevItem}
             item={item}
@@ -76,8 +69,15 @@ const addWorksheetItems = function(props, worksheet_items, prevItem, afterItem) 
             onHideNewText={props.onHideNewText}
             key={props.key}
         >
-            {elem}
-        </ItemWrapper>,
+            {/* <Comp {...props} /> */}
+            {item.mode === 'placeholder_block' ? (
+                <PlaceholderItem {...props} />
+            ) : (
+                <div>
+                    <string>Internal error: {item.mode}</string>
+                </div>
+            )}
+        </ItemWrapper>
     );
 };
 
@@ -92,11 +92,17 @@ class WorksheetItemList extends React.Component {
 
     static displayName = 'WorksheetItemList';
 
-    componentDidUpdate() {
+    componentDidMount() {
+        console.log('componentDidMount WIL');
+    }
+
+    componentDidUpdate(prevProps) {
         var info = this.props.ws.info;
         if (!info || !info.items.length) {
             $('.empty-worksheet').fadeIn('fast');
         }
+        const getItems = (props) => props.ws.info && props.ws.info.items.map((e) => e);
+        console.log('CDU', prevProps, this.props, prevProps.version, this.props.version);
     }
 
     capture_keys() {
@@ -208,57 +214,52 @@ class WorksheetItemList extends React.Component {
         }
         let focusedForButtonsItem;
         if (info && info.items.length > 0) {
-            var worksheet_items = [];
-            info.items.forEach(
-                function(item, index) {
-                    const focused = index === this.props.focusIndex;
+            let worksheet_items = info.items.map((item, index) => {
+                const focused = index === this.props.focusIndex;
 
-                    // focusedForButtons determines whether clicking on Cell/Upload/Run will
-                    // apply to this cell. If nothing is focused (focusIndex = -1),
-                    // append to the end by default.
-                    const focusedForButtons =
-                        focused ||
-                        (this.props.focusIndex === -1 && index === info.items.length - 1);
+                // focusedForButtons determines whether clicking on Cell/Upload/Run will
+                // apply to this cell. If nothing is focused (focusIndex = -1),
+                // append to the end by default.
+                const focusedForButtons =
+                    focused || (this.props.focusIndex === -1 && index === info.items.length - 1);
 
-                    if (focusedForButtons) {
-                        focusedForButtonsItem = item;
-                    }
-                    var props = {
-                        worksheetUUID: info.uuid,
-                        item: item,
-                        version: this.props.version,
-                        active: this.props.active,
-                        focused,
-                        focusedForButtons,
-                        canEdit: this.props.canEdit,
-                        focusIndex: index,
-                        subFocusIndex: focused ? this.props.subFocusIndex : null,
-                        setFocus: this.props.setFocus,
-                        focusActionBar: this.props.focusActionBar,
-                        openWorksheet: this.props.openWorksheet,
-                        handleContextMenu: this.handleContextMenu,
-                        reloadWorksheet: this.props.reloadWorksheet,
-                        ws: this.props.ws,
-                        showNewRun: this.props.showNewRun,
-                        showNewText: this.props.showNewText,
-                        showNewRerun: this.props.showNewRerun,
-                        onHideNewRun: this.props.onHideNewRun,
-                        onHideNewText: this.props.onHideNewText,
-                        onHideNewRerun: this.props.onHideNewRerun,
-                        handleCheckBundle: this.props.handleCheckBundle,
-                        confirmBundleRowAction: this.props.confirmBundleRowAction,
-                        setDeleteItemCallback: this.props.setDeleteItemCallback,
-                        editPermission: info && info.edit_permission,
-                        onAsyncItemLoad: (item) => this.props.onAsyncItemLoad(index, item),
-                    };
-                    addWorksheetItems(
-                        props,
-                        worksheet_items,
-                        index > 0 ? info.items[index - 1] : null,
-                        index < info.items.length - 1 ? info.items[index + 1] : null,
-                    );
-                }.bind(this),
-            );
+                if (focusedForButtons) {
+                    focusedForButtonsItem = item;
+                }
+                var props = {
+                    worksheetUUID: info.uuid,
+                    item: item,
+                    version: this.props.version,
+                    active: this.props.active,
+                    focused,
+                    focusedForButtons,
+                    canEdit: this.props.canEdit,
+                    focusIndex: index,
+                    subFocusIndex: focused ? this.props.subFocusIndex : null,
+                    setFocus: this.props.setFocus,
+                    focusActionBar: this.props.focusActionBar,
+                    openWorksheet: this.props.openWorksheet,
+                    handleContextMenu: this.handleContextMenu,
+                    reloadWorksheet: this.props.reloadWorksheet,
+                    ws: this.props.ws,
+                    showNewRun: this.props.showNewRun,
+                    showNewText: this.props.showNewText,
+                    showNewRerun: this.props.showNewRerun,
+                    onHideNewRun: this.props.onHideNewRun,
+                    onHideNewText: this.props.onHideNewText,
+                    onHideNewRerun: this.props.onHideNewRerun,
+                    handleCheckBundle: this.props.handleCheckBundle,
+                    confirmBundleRowAction: this.props.confirmBundleRowAction,
+                    setDeleteItemCallback: this.props.setDeleteItemCallback,
+                    editPermission: info && info.edit_permission,
+                    onAsyncItemLoad: (item) => this.props.onAsyncItemLoad(index, item),
+                };
+                return getWorksheetItem(
+                    props,
+                    index > 0 ? info.items[index - 1] : null,
+                    index < info.items.length - 1 ? info.items[index + 1] : null,
+                );
+            });
             items_display = (
                 <>
                     {worksheet_items}
