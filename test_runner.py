@@ -13,6 +13,10 @@ class TestRunner(object):
     _CODALAB_SERVICE_EXECUTABLE = './codalab_service.py'
 
     @staticmethod
+    def _docker_exec(command):
+        return 'docker exec -it codalab_rest-server_1 /bin/bash -c "{}"'.format(command)
+
+    @staticmethod
     def _create_temp_instance(name):
         print('Creating another CodaLab instance for testing...')
 
@@ -34,21 +38,23 @@ class TestRunner(object):
                 rest_port, http_port, mysql_port
             )
         )
-        mysql_port = 3306  # Hardcoded for now
+        # mysql_port = 3306  # Hardcoded for now
         instance = 'http://localhost:%s' % rest_port
         try:
             subprocess.check_call(
-                ' '.join(
-                    [
-                        TestRunner._CODALAB_SERVICE_EXECUTABLE,
-                        'start',
-                        '--instance-name %s' % name,
-                        '--rest-port %s' % rest_port,
-                        '--http-port %s' % http_port,
-                        '--mysql-port %s' % mysql_port,
-                        '--version %s' % version,
-                        '--services default',
-                    ]
+                TestRunner._docker_exec(
+                    ' '.join(
+                        [
+                            TestRunner._CODALAB_SERVICE_EXECUTABLE,
+                            'start',
+                            '--instance-name %s' % name,
+                            '--rest-port %s' % rest_port,
+                            '--http-port %s' % http_port,
+                            '--mysql-port %s' % mysql_port,
+                            '--version %s' % version,
+                            '--services default',
+                        ]
+                    )
                 ),
                 shell=True,
             )
@@ -78,9 +84,10 @@ class TestRunner(object):
                 )
             )
             subprocess.check_call(
-                'docker exec -it codalab_rest-server_1 /bin/bash -c "python3 test_cli.py '
-                '--instance {} --second-instance {} {}"'.format(
-                    self.instance, self.temp_instance, ' '.join(self.tests)
+                TestRunner._docker_exec(
+                    '--instance {} --second-instance {} {}"'.format(
+                        self.instance, self.temp_instance, ' '.join(self.tests)
+                    )
                 ),
                 shell=True,
             )
