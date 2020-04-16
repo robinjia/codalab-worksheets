@@ -126,7 +126,7 @@ if __name__ == '__main__':
         '--version',
         type=str,
         help='CodaLab version to use for multi-instance tests, defaults to "latest"',
-        default='latest', #get_default_version()
+        default=get_default_version()
     )
     parser.add_argument(
         '--instance',
