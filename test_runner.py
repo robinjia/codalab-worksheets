@@ -42,20 +42,18 @@ class TestRunner(object):
         instance = 'http://localhost:%s' % rest_port
         try:
             subprocess.check_call(
-                TestRunner._docker_exec(
-                    ' '.join(
-                        [
-                            'python3',
-                            TestRunner._CODALAB_SERVICE_EXECUTABLE,
-                            'start',
-                            '--instance-name %s' % name,
-                            '--rest-port %s' % rest_port,
-                            '--http-port %s' % http_port,
-                            '--mysql-port %s' % mysql_port,
-                            '--version %s' % version,
-                            '--services default',
-                        ]
-                    )
+                ' '.join(
+                    [
+                        'python3',
+                        TestRunner._CODALAB_SERVICE_EXECUTABLE,
+                        'start',
+                        '--instance-name %s' % name,
+                        '--rest-port %s' % rest_port,
+                        '--http-port %s' % http_port,
+                        '--mysql-port %s' % mysql_port,
+                        '--version %s' % version,
+                        '--services default',
+                    ]
                 ),
                 shell=True,
             )
@@ -126,7 +124,7 @@ if __name__ == '__main__':
         '--version',
         type=str,
         help='CodaLab version to use for multi-instance tests, defaults to "latest"',
-        default=get_default_version()
+        default=get_default_version(),
     )
     parser.add_argument(
         '--instance',
