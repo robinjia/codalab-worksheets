@@ -102,6 +102,7 @@ class TestRunner(object):
         subprocess.check_call(
             ' '.join(
                 [
+                    'python3',
                     TestRunner._CODALAB_SERVICE_EXECUTABLE,
                     'stop',
                     '--instance-name %s' % self.temp_instance_name,
