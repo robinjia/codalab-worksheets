@@ -38,7 +38,7 @@ class TestRunner(object):
                 rest_port, http_port, mysql_port
             )
         )
-        # mysql_port = 3306  # Hardcoded for now
+        mysql_port = 3306  # Hardcoded for now
         instance = 'http://localhost:%s' % rest_port
         try:
             subprocess.check_call(
@@ -85,7 +85,7 @@ class TestRunner(object):
             )
             subprocess.check_call(
                 TestRunner._docker_exec(
-                    '--instance {} --second-instance {} {}"'.format(
+                    'python3 test_cli.py --instance {} --second-instance {} {}"'.format(
                         self.instance, self.temp_instance, ' '.join(self.tests)
                     )
                 ),
