@@ -36,25 +36,25 @@ class TestRunner(object):
         )
         # mysql_port = 3306  # Hardcoded for now
         instance = 'http://localhost:%s' % rest_port
-        try:
-            subprocess.check_call(
-                ' '.join(
-                    [
-                        TestRunner._CODALAB_SERVICE_EXECUTABLE,
-                        'start',
-                        '--instance-name %s' % name,
-                        '--rest-port %s' % rest_port,
-                        '--http-port %s' % http_port,
-                        '--mysql-port %s' % mysql_port,
-                        '--version %s' % version,
-                        '--services default',
-                    ]
-                ),
-                shell=True,
-            )
-        except subprocess.CalledProcessError as ex:
-            print('Temp instance exception: %s' % ex.output)
-            raise
+        # try:
+        #     subprocess.check_call(
+        #         ' '.join(
+        #             [
+        #                 TestRunner._CODALAB_SERVICE_EXECUTABLE,
+        #                 'start',
+        #                 '--instance-name %s' % name,
+        #                 '--rest-port %s' % rest_port,
+        #                 '--http-port %s' % http_port,
+        #                 '--mysql-port %s' % mysql_port,
+        #                 '--version %s' % version,
+        #                 '--services default',
+        #             ]
+        #         ),
+        #         shell=True,
+        #     )
+        # except subprocess.CalledProcessError as ex:
+        #     print('Temp instance exception: %s' % ex.output)
+        #     raise
 
         return instance
 
