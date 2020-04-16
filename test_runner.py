@@ -10,7 +10,7 @@ import sys
 
 
 class TestRunner(object):
-    _CODALAB_SERVICE_EXECUTABLE = './codalab_service.py'
+    _CODALAB_SERVICE_EXECUTABLE = 'codalab_service.py'
 
     @staticmethod
     def _docker_exec(command):
@@ -45,6 +45,7 @@ class TestRunner(object):
                 TestRunner._docker_exec(
                     ' '.join(
                         [
+                            'python3',
                             TestRunner._CODALAB_SERVICE_EXECUTABLE,
                             'start',
                             '--instance-name %s' % name,
@@ -125,7 +126,7 @@ if __name__ == '__main__':
         '--version',
         type=str,
         help='CodaLab version to use for multi-instance tests, defaults to "latest"',
-        default=get_default_version(),
+        default='latest', #get_default_version()
     )
     parser.add_argument(
         '--instance',
