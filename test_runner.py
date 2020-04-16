@@ -40,6 +40,7 @@ class TestRunner(object):
         )
         mysql_port = 3306  # Hardcoded for now
         instance = 'http://localhost:%s' % rest_port
+        instance = 'http://rest-server:%s' % rest_port
         try:
             subprocess.check_call(
                 ' '.join(
