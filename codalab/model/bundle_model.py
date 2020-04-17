@@ -784,7 +784,9 @@ class BundleModel(object):
             ).fetchone()
             if not row:
                 raise IntegrityError('Missing bundle with UUID %s' % bundle.uuid)
-            if row.state != State.STARTING:
+
+            # Added STAGED state here to move bundles that reclaimed back from workers
+            if row.state not in [State.STARTING, State.RECLAIMED]:
                 # It is possible that this method is called on a bundle
                 # that has started running.
                 return False
@@ -990,6 +992,10 @@ class BundleModel(object):
                 return self.transition_bundle_running(
                     bundle, worker_run, row, user_id, worker_id, connection
                 )
+            # Get staged bundle from worker side checkin, move it to staged state
+            if worker_run.state == State.STAGED:
+                return self.transition_bundle_staged(bundle)
+
             # State isn't one we can check in for
             return False
 

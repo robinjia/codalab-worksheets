@@ -196,6 +196,10 @@ def main():
     if local_bundles_dir and not os.path.exists(local_bundles_dir):
         logger.info('%s doesn\'t exist, creating.', local_bundles_dir)
         os.makedirs(local_bundles_dir, 0o770)
+    reclaimed_bundles_dir = os.path.join(args.work_idr, 'reclaimed_bundles')
+    if not os.path.exists(reclaimed_bundles_dir):
+        logging.debug('Reclaimed bundles dir %s doesn\'t exist, creating.', reclaimed_bundles_dir)
+        os.makedirs(reclaimed_bundles_dir, 0o770)
 
     docker_runtime = docker_utils.get_available_runtime()
     image_manager = DockerImageManager(
@@ -215,6 +219,7 @@ def main():
         args.tag,
         args.work_dir,
         local_bundles_dir,
+        reclaimed_bundles_dir,
         args.exit_when_idle,
         args.idle_seconds,
         bundle_service,

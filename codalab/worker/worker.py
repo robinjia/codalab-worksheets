@@ -55,6 +55,7 @@ class Worker:
         tag,  # type: str
         work_dir,  # type: str
         local_bundles_dir,  # type: Optional[str]
+        reclaimed_bundles_dir,  # type: Optional[str]
         exit_when_idle,  # type: str
         idle_seconds,  # type: int
         bundle_service,  # type: BundleServiceClient
@@ -84,6 +85,7 @@ class Worker:
 
         self.work_dir = work_dir
         self.local_bundles_dir = local_bundles_dir
+        self.reclaimed_bundles_dir = reclaimed_bundles_dir
         self.shared_file_system = shared_file_system
 
         self.exit_when_idle = exit_when_idle
@@ -105,6 +107,7 @@ class Worker:
             upload_bundle_callback=self.upload_bundle_contents,
             assign_cpu_and_gpu_sets_fn=self.assign_cpu_and_gpu_sets,
             shared_file_system=self.shared_file_system,
+            reclaimed_bundles_dir=self.reclaimed_bundles_dir,
         )
 
     def init_docker_networks(self, docker_network_prefix):
@@ -291,12 +294,17 @@ class Worker:
 
     def process_runs(self):
         """ Transition each run then filter out finished runs """
-        # transition all runs
-        for bundle_uuid in self.runs.keys():
-            run_state = self.runs[bundle_uuid]
-            self.runs[bundle_uuid] = self.run_state_manager.transition(run_state)
+        # 1. exclude processing runs that will be sent back to the staged state
+        reclaimed_uuids = os.listdir(self.reclaimed_bundles_dir)
+        self.runs = {
+            uuid: run_state for uuid, run_state in self.runs.items() if uuid not in reclaimed_uuids
+        }
+        # 2. transition all runs
+        for uuid in self.runs:
+            run_state = self.runs[uuid]
+            self.runs[uuid] = self.run_state_manager.transition(run_state)
 
-        # filter out finished runs
+        # 3. filter out finished runs and clean up containers
         finished_container_ids = [
             run.container
             for run in self.runs.values()
@@ -309,7 +317,12 @@ class Worker:
                 container.remove(force=True)
             except (docker.errors.NotFound, docker.errors.NullResource):
                 pass
-        self.runs = {k: v for k, v in self.runs.items() if v.stage != RunStage.FINISHED}
+        # 4. reset runs for the current worker
+        self.runs = {
+            uuid: run_state
+            for uuid, run_state in self.runs.items()
+            if run_state.stage != RunStage.FINISHED
+        }
 
     def assign_cpu_and_gpu_sets(self, request_cpus, request_gpus):
         """

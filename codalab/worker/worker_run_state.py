@@ -9,7 +9,7 @@ import docker
 import codalab.worker.docker_utils as docker_utils
 
 from codalab.lib.formatting import size_str, duration_str
-from codalab.worker.file_util import remove_path, get_path_size
+from codalab.worker.file_util import remove_path, get_path_size, touch_file
 from codalab.worker.bundle_state import State, DependencyKey
 from codalab.worker.fsm import DependencyStage, StateTransitioner
 from codalab.worker.worker_thread import ThreadDict
@@ -25,6 +25,9 @@ class RunStage(object):
     """
 
     WORKER_STATE_TO_SERVER_STATE = {}
+
+    RECLAIMED = 'RUN_STAGE.RECLAIMED'
+    WORKER_STATE_TO_SERVER_STATE[RECLAIMED] = State.RECLAIMED
 
     """
     This stage involves setting up the directory structure for the run
@@ -117,14 +120,17 @@ class RunStateMachine(StateTransitioner):
         upload_bundle_callback,  # Function to call to upload bundle results to the server
         assign_cpu_and_gpu_sets_fn,  # Function to call to assign CPU and GPU resources to each run
         shared_file_system,  # If True, bundle mount is shared with server
+        reclaimed_bundles_dir,
     ):
         super(RunStateMachine, self).__init__()
+        self.add_transition(RunStage.RECLAIMED, self._transition_from_RECLAIMED)
         self.add_transition(RunStage.PREPARING, self._transition_from_PREPARING)
         self.add_transition(RunStage.RUNNING, self._transition_from_RUNNING)
         self.add_transition(RunStage.CLEANING_UP, self._transition_from_CLEANING_UP)
         self.add_transition(RunStage.UPLOADING_RESULTS, self._transition_from_UPLOADING_RESULTS)
         self.add_transition(RunStage.FINALIZING, self._transition_from_FINALIZING)
         self.add_terminal(RunStage.FINISHED)
+        self.add_terminal(RunStage.RECLAIMED)
 
         self.dependency_manager = dependency_manager
         self.docker_image_manager = docker_image_manager
@@ -141,12 +147,17 @@ class RunStateMachine(StateTransitioner):
         self.upload_bundle_callback = upload_bundle_callback
         self.assign_cpu_and_gpu_sets_fn = assign_cpu_and_gpu_sets_fn
         self.shared_file_system = shared_file_system
+        self.reclaimed_bundles_dir = reclaimed_bundles_dir
 
     def stop(self):
         for uuid in self.disk_utilization.keys():
             self.disk_utilization[uuid]['running'] = False
         self.disk_utilization.stop()
         self.uploading.stop()
+
+    def _transition_from_RECLAIMED(self, run_state):
+        # set flag of those bundles in reclaimed_bundle_dir
+        touch_file(os.path.join(self.reclaimed_bundles_dir, run_state.bundle.uuid))
 
     def _transition_from_PREPARING(self, run_state):
         """
@@ -173,7 +184,7 @@ class RunStateMachine(StateTransitioner):
             message = "Unexpectedly unable to assign enough resources: %s" % str(e)
             logger.error(message)
             logger.error(traceback.format_exc())
-            return run_state._replace(run_status=message)
+            return run_state._replace(stage=RunStage.RECLAIMED)
 
         dependencies_ready = True
         status_messages = []
