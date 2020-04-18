@@ -31,15 +31,15 @@ class TestRunner(object):
                 s.close()
             return ports
 
-        rest_port, http_port, mysql_port = get_free_ports(3)
+        rest_port, http_port = get_free_ports(2)
+        mysql_port = 3306  # Hardcoded for now
+
         # TODO: delete -tony
         print(
             '1. Tony rest_port: {}, http_port: {}, mysql_port: {}'.format(
                 rest_port, http_port, mysql_port
             )
         )
-        mysql_port = 3306  # Hardcoded for now
-        instance = 'http://localhost:%s' % rest_port
         instance = 'http://rest-server:%s' % rest_port
         try:
             subprocess.check_call(
