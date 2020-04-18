@@ -85,7 +85,7 @@ class TestRunner(object):
             )
             subprocess.check_call(
                 TestRunner._docker_exec(
-                    'python3 test_cli.py --instance {} --second-instance {} {}"'.format(
+                    'python3 test_cli.py --instance {} --second-instance {} {}'.format(
                         self.instance, self.temp_instance, ' '.join(self.tests)
                     )
                 ),
