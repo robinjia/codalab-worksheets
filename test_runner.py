@@ -25,7 +25,7 @@ class TestRunner(object):
 
             socks = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in range(num_ports)]
             for s in socks:
-                s.bind(('http://rest-server', 0))
+                s.bind(('0.0.0.0', 0))
             ports = [str(s.getsockname()[1]) for s in socks]
             for s in socks:
                 s.close()
