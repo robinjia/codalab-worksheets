@@ -49,9 +49,9 @@ class TestRunner(object):
                         TestRunner._CODALAB_SERVICE_EXECUTABLE,
                         'start',
                         '--instance-name %s' % name,
-                        '--rest-port %s' % rest_port,
-                        '--http-port %s' % http_port,
-                        '--mysql-port %s' % mysql_port,
+                        # '--rest-port %s' % rest_port,
+                        # '--http-port %s' % http_port,
+                        # '--mysql-port %s' % mysql_port,
                         '--version %s' % version,
                         '--services default',
                     ]
