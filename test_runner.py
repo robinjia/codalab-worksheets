@@ -33,6 +33,7 @@ class TestRunner(object):
             return ports
 
         rest_port = portpicker.pick_unused_port('0.0.0.0')
+        rest_port = 2900
         http_port = portpicker.pick_unused_port('0.0.0.0')
         mysql_port = 3306  # Hardcoded for now
 
@@ -51,7 +52,7 @@ class TestRunner(object):
                         TestRunner._CODALAB_SERVICE_EXECUTABLE,
                         'start',
                         '--instance-name %s' % name,
-                        #'--rest-port %s' % rest_port,
+                        '--rest-port %s' % rest_port,
                         '--http-port %s' % http_port,
                         '--mysql-port %s' % mysql_port,
                         '--version %s' % version,
