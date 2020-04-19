@@ -53,8 +53,8 @@ class TestRunner(object):
                         'start',
                         '--instance-name %s' % name,
                         '--rest-port %s' % rest_port,
-                        '--http-port %s' % http_port,
-                        '--mysql-port %s' % mysql_port,
+                        #'--http-port %s' % http_port,
+                        #'--mysql-port %s' % mysql_port,
                         '--version %s' % version,
                         '--services default',
                     ]
