@@ -1,5 +1,4 @@
 # from scripts.test_util import run_command
-from codalab_service import clean_version, get_default_version
 from test_cli import TestModule
 
 import argparse
@@ -129,7 +128,7 @@ if __name__ == '__main__':
         '--version',
         type=str,
         help='CodaLab version to use for multi-instance tests, defaults to "latest"',
-        default=get_default_version(),
+        default='latest',
     )
     parser.add_argument(
         '--instance',
@@ -148,7 +147,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     cl = args.cl_executable
-    version = clean_version(args.version)
+    version = args.version
     test_runner = TestRunner(args.instance, args.tests)
     if not test_runner.run():
         sys.exit(1)
