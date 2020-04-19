@@ -615,8 +615,8 @@ class CodalabServiceManager(object):
                 popen.wait()
                 success = popen.returncode == 0
                 if not success:
-                    print('TODO: Tony undo this later')
-                    # raise Exception('Command exited with code {}'.format(popen.returncode))
+                    # print('TODO: Tony undo this later')
+                    raise Exception('Command exited with code {}'.format(popen.returncode))
             except subprocess.CalledProcessError as e:
                 print(
                     "CalledProcessError: {}, {}".format(
