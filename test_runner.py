@@ -25,6 +25,7 @@ class TestRunner(object):
 
             socks = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in range(num_ports)]
             for s in socks:
+                # When binding a socket to port 0, the kernel will assign it a free port
                 s.bind(('0.0.0.0', 0))
             ports = [str(s.getsockname()[1]) for s in socks]
             for s in socks:
@@ -32,7 +33,7 @@ class TestRunner(object):
             return ports
 
         rest_port = portpicker.pick_unused_port('0.0.0.0')
-        rest_port = 2900  # default is 2900
+        rest_port = 3000  # default is 2900
         http_port = portpicker.pick_unused_port('0.0.0.0')
         mysql_port = 3306  # Hardcoded for now
 
