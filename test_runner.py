@@ -3,6 +3,7 @@ from codalab_service import clean_version, get_default_version
 from test_cli import TestModule
 
 import argparse
+import portpicker
 import random
 import string
 import subprocess
@@ -31,7 +32,8 @@ class TestRunner(object):
                 s.close()
             return ports
 
-        rest_port, http_port = get_free_ports(2)
+        rest_port = portpicker.pick_unused_port()
+        http_port = portpicker.pick_unused_port()
         mysql_port = 3306  # Hardcoded for now
 
         # TODO: delete -tony
@@ -49,9 +51,9 @@ class TestRunner(object):
                         TestRunner._CODALAB_SERVICE_EXECUTABLE,
                         'start',
                         '--instance-name %s' % name,
-                        # '--rest-port %s' % rest_port,
-                        # '--http-port %s' % http_port,
-                        # '--mysql-port %s' % mysql_port,
+                        '--rest-port %s' % rest_port,
+                        '--http-port %s' % http_port,
+                        '--mysql-port %s' % mysql_port,
                         '--version %s' % version,
                         '--services default',
                     ]
