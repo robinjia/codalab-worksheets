@@ -36,15 +36,18 @@ jobs:
       script:
         # TODO: check below -tony
         # - python3 codalab_service.py test --version ${TRAVIS_BRANCH} default
+        - python3 codalab_service.py build services --version ${TRAVIS_BRANCH} --pull $([ -z "${CODALAB_DOCKER_USERNAME}" ] || [ "$TRAVIS_PULL_REQUEST_BRANCH" != "" ] || echo "--push")
         - python3 test_runner.py --version ${TRAVIS_BRANCH} default
         # Make sure restarting worker doesn't cause any issues (ie in serialization/deserialization)
         # TODO: check below -tony
         # - docker restart codalab_worker_1 && python3 codalab_service.py test run --version ${TRAVIS_BRANCH}
         - docker restart codalab_worker_1 && python3 test_runner.py --version ${TRAVIS_BRANCH} run
         - docker stop codalab_worker_1
+        - python3 codalab_service.py build services --version ${TRAVIS_BRANCH} --pull $([ -z "${CODALAB_DOCKER_USERNAME}" ] || [ "$TRAVIS_PULL_REQUEST_BRANCH" != "" ] || echo "--push")
         - python3 codalab_service.py start --services init worker --version ${TRAVIS_BRANCH} --shared-file-system
         # TODO: check below -tony
         # - python3 codalab_service.py test --version ${TRAVIS_BRANCH} basic run read write kill resources netcat netcurl workers
+        - python3 codalab_service.py build services --version ${TRAVIS_BRANCH} --pull $([ -z "${CODALAB_DOCKER_USERNAME}" ] || [ "$TRAVIS_PULL_REQUEST_BRANCH" != "" ] || echo "--push")
         - python3 test_runner.py --version ${TRAVIS_BRANCH} basic run read write kill resources netcat netcurl workers
         - python3 tests/ui/ui_tester.py --headless
     - stage: deploy
