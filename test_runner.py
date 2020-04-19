@@ -33,7 +33,7 @@ class TestRunner(object):
             return ports
 
         rest_port = portpicker.pick_unused_port('0.0.0.0')
-        rest_port = 2900
+        rest_port = 3000    # default is 2900
         http_port = portpicker.pick_unused_port('0.0.0.0')
         mysql_port = 3306  # Hardcoded for now
 
