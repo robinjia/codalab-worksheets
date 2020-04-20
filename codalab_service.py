@@ -583,7 +583,7 @@ class CodalabServiceManager(object):
 
     def _run_compose_cmd(self, cmd):
         compose_files_str = ' '.join('-f ' + f for f in self.compose_files)
-        command_string = 'docker-compose -p %s %s %s' % (
+        command_string = 'docker-compose --service-ports -p %s %s %s' % (
             self.args.instance_name,
             compose_files_str,
             cmd,
