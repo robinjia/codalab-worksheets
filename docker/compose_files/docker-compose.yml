@@ -74,7 +74,6 @@ services:
     image: codalab/server:${CODALAB_VERSION}
     ports:
       - ${CODALAB_REST_PORT}
-      - "3000"
     command: cl-server
     <<: *codalab-base
     <<: *codalab-server
