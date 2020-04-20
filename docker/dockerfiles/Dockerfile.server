@@ -60,4 +60,4 @@ RUN python3 -m pip install -e .
 # Allow non-root to read everything
 RUN chmod -R og=u-w .
 
-EXPOSE 2900
+EXPOSE 2900 3000
