@@ -489,8 +489,7 @@ class BundleManager(object):
 
     def _try_start_bundle(self, workers, worker, bundle, bundle_resources):
         """
-        Tries to start running the bundle on the given worker, returning False
-        if that failed.
+        Tries to start running the bundle on the given worker, returning False if that failed.
         """
         if self._model.transition_bundle_starting(bundle, worker['user_id'], worker['worker_id']):
             workers.set_starting(bundle.uuid, worker['worker_id'])
@@ -741,9 +740,9 @@ class BundleManager(object):
 
         for bundle in self._model.batch_get_bundles(state=State.STAGED, bundle_type='run'):
 
-            if bundle.uuid in self._testing_uuid:
-                continue
-            self._testing_uuid.add(bundle.uuid)
+            # if bundle.uuid in self._testing_uuid:
+            #    continue
+            # self._testing_uuid.add(bundle.uuid)
             # Cache those visited user information
             if bundle.owner_id in user_info_cache:
                 user_info = user_info_cache[bundle.owner_id]

@@ -752,12 +752,24 @@ class BundleModel(object):
             Adds a worker_run row that tracks which worker will run the bundle.
         """
         with self.engine.begin() as connection:
-            # Check that it still exists.
+            # Check if the requested bundle still exists.
             row = connection.execute(
                 cl_bundle.select().where(cl_bundle.c.id == bundle.id)
             ).fetchone()
             if not row:
                 # The user deleted the bundle.
+                return False
+            logger.info("transition_bundle_starting ")
+            # Check if designated worker still exists
+            worker = connection.execute(
+                cl_worker.select().where(cl_worker.c.worker_id == worker_id)
+            ).fetchclone()
+
+            logger.info(
+                "transition_bundle_starting, bundle = {}, worker = {}".format(bundle.uuid, worker)
+            )
+
+            if not worker:
                 return False
 
             bundle_update = {
@@ -784,25 +796,27 @@ class BundleModel(object):
             ).fetchone()
             if not row:
                 raise IntegrityError('Missing bundle with UUID %s' % bundle.uuid)
-            if row.state not in [State.STARTING, State.RECLAIMED]:
+            logger.info(
+                "transition_bundle_staged uuid = {}, row.state ={} ".format(bundle.uuid, row.state)
+            )
+            if row.state not in [State.STARTING, State.PREPARING, State.RUNNING]:
                 # It is possible that this method is called on a bundle
                 # that has started running.
                 return False
 
-            if row.state == State.RECLAIMED:
-                metadata_update = {
-                    'job_handle': None,
-                    'started': None,
-                    'run_status': None,
-                    'last_updated': None,
-                    'time': None,
-                    'time_user': None,
-                    'time_system': None,
-                    'remote': None,
-                }
-            else:
-                metadata_update = {'state': State.STAGED, 'metadata': {'job_handle': None}}
-            self.update_bundle(bundle, metadata_update, connection)
+            metadata_update = {
+                'job_handle': None,
+                'started': None,
+                'run_status': None,
+                'last_updated': None,
+                'time': None,
+                'time_user': None,
+                'time_system': None,
+                'remote': None,
+            }
+
+            bundle_update = {'state': State.STAGED, 'metadata': metadata_update}
+            self.update_bundle(bundle, bundle_update, connection)
             connection.execute(
                 cl_worker_run.delete().where(cl_worker_run.c.run_uuid == bundle.uuid)
             )
@@ -991,7 +1005,7 @@ class BundleModel(object):
                 return False
 
             logger.info("bundle {} checkin state = {}".format(bundle.uuid, worker_run.state))
-            # Get staged bundle from worker side checkin, move it to staged state
+            # Get reclaimed bundle from worker side checkin, move it to staged state
             if worker_run.state == State.RECLAIMED:
                 return self.transition_bundle_staged(bundle)
 

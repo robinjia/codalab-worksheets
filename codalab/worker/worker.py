@@ -189,6 +189,8 @@ class Worker:
                     if self.terminate:
                         if self.reclaim_bundles() == 0:
                             self.stop = True
+                    else:
+                        self.stop = True
                 # Save state for one last time: excluded all the bundles in FINISHED and RECLAIMED state
                 self.save_state()
                 if self.check_idle_stop():
@@ -200,24 +202,6 @@ class Worker:
                 logger.error('Sleeping for 1 hour due to exception...please help me!')
                 time.sleep(1 * 60 * 60)
         self.cleanup()
-
-    def terminate_containers(self):
-        """
-        Clean up bundle containers by moving all the existing unfinished bundles to terminal states.
-
-        :returns: the number of unfinished bundles.
-        """
-        unfinished_bundles = []
-        for bundle_uuid in self.runs:
-            run_state = self.runs[bundle_uuid]
-            if run_state.stage != RunStage.FINISHED and run_state.container_id is not None:
-                run_state = run_state._replace(
-                    kill_message='Received termination signal to kill the bundle', is_killed=True
-                )
-                self.runs[bundle_uuid] = self.run_state_manager.transition(run_state)
-                unfinished_bundles.append(bundle_uuid)
-        logger.info("Terminating running bundles {}.".format(','.join(unfinished_bundles)))
-        return len(unfinished_bundles)
 
     def cleanup(self):
         """
@@ -241,7 +225,7 @@ class Worker:
 
     def signal(self):
         # When the terminate flag is False, set the stop flag to stop running
-        # the worker without changing the status of existing running bundles.
+        # the worker without changing the status of existing running bundles
         if not self.terminate:
             self.stop = True
         else:
@@ -262,7 +246,9 @@ class Worker:
                 if run_state.stage not in [RunStage.RECLAIMED, RunStage.FINISHED]
             }
         else:
-            logger.info("Sending bundles: {} back to staged state.".format(','.join(reclaimed_bundles)))
+            logger.info(
+                "Sending bundles: {} back to staged state.".format(','.join(reclaimed_bundles))
+            )
         return len(reclaimed_bundles)
 
     def send_reclaimed_bundles_back(self):
@@ -281,7 +267,6 @@ class Worker:
         }
         self.save_state()
         logger.info("Finished last checkin, runs are = {}".format(self.runs.keys()))
-
 
     @property
     def cached_dependencies(self):
@@ -332,7 +317,8 @@ class Worker:
                 time.sleep(self.CHECKIN_COOLDOWN)
             self.last_checkin_successful = False
             response = None
-
+        if self.stop or self.terminate_signal:
+            return
         logger.info("response = {}".format(response))
         if not response:
             return
