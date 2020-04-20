@@ -9,7 +9,7 @@ import docker
 import codalab.worker.docker_utils as docker_utils
 
 from codalab.lib.formatting import size_str, duration_str
-from codalab.worker.file_util import remove_path, get_path_size, touch_file
+from codalab.worker.file_util import remove_path, get_path_size
 from codalab.worker.bundle_state import State, DependencyKey
 from codalab.worker.fsm import DependencyStage, StateTransitioner
 from codalab.worker.worker_thread import ThreadDict
@@ -99,7 +99,7 @@ RunState = namedtuple(
         'kill_message',  # Optional[str]
         'finished',  # bool
         'finalized',  # bool
-        'is_reclaimed', # bool
+        'is_reclaimed',  # bool
     ],
 )
 
@@ -170,8 +170,6 @@ class RunStateMachine(StateTransitioner):
             - Start the docker container
         4- If all is successful, move to RUNNING state
         """
-
-        logger.info("_transition_from_PREPARING: is_killed = {}, is_reclaimed = {}".format(run_state.is_killed, run_state.is_reclaimed))
         if run_state.is_killed or run_state.is_reclaimed:
             return run_state._replace(stage=RunStage.CLEANING_UP)
 
@@ -181,7 +179,9 @@ class RunStateMachine(StateTransitioner):
                 run_state.resources.cpus, run_state.resources.gpus
             )
         except Exception as e:
-            message = "Unexpectedly unable to assign enough resources: %s" % str(e)
+            message = "Unexpectedly unable to assign enough resources to bundle {}: {}".format(
+                run_state.bundle.uuid, str(e)
+            )
             logger.error(message)
             logger.error(traceback.format_exc())
             return run_state._replace(stage=RunStage.CLEANING_UP, is_reclaimed=True)
@@ -327,6 +327,7 @@ class RunStateMachine(StateTransitioner):
         2- If run is killed, kill the container
         3- If run is finished, move to CLEANING_UP state
         """
+        logger.info("_transition_from_RUNNING")
 
         def check_and_report_finished(run_state):
             try:
@@ -405,7 +406,11 @@ class RunStateMachine(StateTransitioner):
         run_state = check_and_report_finished(run_state)
         run_state = check_resource_utilization(run_state)
 
-        logger.info("run_state.is_reclaimed = {}, is_killed = {}".format(run_state.is_reclaimed, run_state.is_killed))
+        logger.info(
+            "run_state.is_reclaimed = {}, is_killed = {}".format(
+                run_state.is_reclaimed, run_state.is_killed
+            )
+        )
 
         if run_state.is_killed or run_state.is_reclaimed:
             if docker_utils.container_exists(run_state.container):
@@ -470,10 +475,7 @@ class RunStateMachine(StateTransitioner):
                 logger.error(traceback.format_exc())
 
         if run_state.is_reclaimed:
-            run_state = run_state._replace(stage=RunStage.RECLAIMED)
-            logger.info("CLEANING_UP reaching the bundle state = {}".format(run_state.stage))
-
-            return run_state
+            return run_state._replace(stage=RunStage.RECLAIMED)
 
         if not self.shared_file_system and run_state.has_contents:
             # No need to upload results since results are directly written to bundle store
@@ -494,6 +496,8 @@ class RunStateMachine(StateTransitioner):
         If uploading and finished:
             Move to FINALIZING state
         """
+        if run_state.is_reclaimed:
+            return run_state._replace(stage=RunStage.RECLAIMED)
 
         def upload_results():
             try:
@@ -546,7 +550,8 @@ class RunStateMachine(StateTransitioner):
         """
         Prepare the finalize message to be sent with the next checkin
         """
-        logger.info("finalize_run bundle state = {}".format(run_state.bundle.state))
+        if run_state.is_reclaimed:
+            return run_state._replace(stage=RunStage.RECLAIMED)
 
         if run_state.is_killed:
             # Append kill_message, which contains more useful info on why a run was killed, to the failure message.
@@ -563,8 +568,6 @@ class RunStateMachine(StateTransitioner):
         If a full worker cycle has passed since we got into FINALIZING we already reported to
         server so can move on to FINISHED. Can also remove bundle_path now
         """
-        logger.info("_transition_from_FINALIZING bundle state = {}".format(run_state.bundle.state))
-
         if run_state.finalized:
             if not self.shared_file_system:
                 remove_path(run_state.bundle_path)  # don't remove bundle if shared FS

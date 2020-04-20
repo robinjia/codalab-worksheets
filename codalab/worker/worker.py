@@ -16,7 +16,7 @@ import codalab.worker.docker_utils as docker_utils
 from .bundle_service_client import BundleServiceException
 from .download_util import BUNDLE_NO_LONGER_RUNNING_MESSAGE
 from .state_committer import JsonStateCommitter
-from .bundle_state import BundleInfo, RunResources, BundleCheckinState,State
+from .bundle_state import BundleInfo, RunResources, BundleCheckinState, State
 from .worker_run_state import RunStateMachine, RunStage, RunState
 from .reader import Reader
 
@@ -183,10 +183,9 @@ class Worker:
                 self.checkin()
                 self.save_state()
                 if self.terminate:
-                    if self.reclaiming_bundles() == 0:
+                    if self.reclaim_bundles() == 0:
                         self.stop = True
-                        self.send_staged_bundles_back()
-
+                        self.send_reclaimed_bundles_back()
                 if self.check_idle_stop():
                     self.stop = True
             except Exception:
@@ -220,23 +219,32 @@ class Worker:
     def signal(self):
         self.terminate = True
 
-    def reclaiming_bundles(self):
-        unfinished_bundles = []
+    def reclaim_bundles(self):
+        reclaimed_bundles = []
         for uuid in self.runs:
             run_state = self.runs[uuid]
             if run_state.stage not in [RunStage.FINISHED, RunStage.RECLAIMED]:
                 self.reclaim(uuid)
-                logger.info("reclaiming bundle: {}, stage = {}, is_reclaimed = {}".format(uuid, run_state.stage, run_state.is_reclaimed))
-                unfinished_bundles.append(uuid)
-        return len(unfinished_bundles)
+                reclaimed_bundles.append(uuid)
+        logger.info("Sending bundles: {} back to staged state.".format(','.join(reclaimed_bundles)))
+        return len(reclaimed_bundles)
 
-    def send_staged_bundles_back(self):
-        self.runs = {uuid: run_state for uuid, run_state in self.runs.items() if run_state.stage == RunStage.RECLAIMED}
+    def send_reclaimed_bundles_back(self):
+        self.runs = {
+            uuid: run_state
+            for uuid, run_state in self.runs.items()
+            if run_state.stage == RunStage.RECLAIMED
+        }
         logger.info("Sending staged bundles back {}".format(self.runs.keys()))
         self.checkin()
         # reset the current runs
-        self.runs ={uuid: run_state for uuid, run_state in self.runs.items() if run_state.stage not in [RunStage.RECLAIMED, RunStage.FINISHED]}
+        self.runs = {
+            uuid: run_state
+            for uuid, run_state in self.runs.items()
+            if run_state.stage not in [RunStage.RECLAIMED, RunStage.FINISHED]
+        }
         self.save_state()
+        logger.info("Finished last checkin, runs are = {}".format(self.runs.keys()))
 
     @property
     def cached_dependencies(self):
@@ -287,12 +295,14 @@ class Worker:
                 time.sleep(self.CHECKIN_COOLDOWN)
             self.last_checkin_successful = False
             response = None
+
+        logger.info("response = {}".format(response))
         if not response:
             return
         action_type = response['type']
         logger.debug('Received %s message: %s', action_type, response)
         if action_type == 'run':
-            self.run(response['bundle'], response['resources'])
+            self.initialize_bundle_run(response['bundle'], response['resources'])
         else:
             uuid = response['uuid']
             socket_id = response.get('socket_id', None)
@@ -333,6 +343,7 @@ class Worker:
                 container.remove(force=True)
             except (docker.errors.NotFound, docker.errors.NullResource):
                 pass
+
         # 4. reset runs for the current worker
         self.runs = {
             uuid: run_state
@@ -428,7 +439,7 @@ class Worker:
             logger.error("{}: {}".format(error_msg, str(e)))
             return None
 
-    def run(self, bundle, resources):
+    def initialize_bundle_run(self, bundle, resources):
         """
         First, checks in with the bundle service and sees if the bundle
         is still assigned to this worker. If not, returns immediately.
