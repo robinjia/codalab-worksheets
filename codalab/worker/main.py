@@ -196,10 +196,6 @@ def main():
     if local_bundles_dir and not os.path.exists(local_bundles_dir):
         logger.info('%s doesn\'t exist, creating.', local_bundles_dir)
         os.makedirs(local_bundles_dir, 0o770)
-    reclaimed_bundles_dir = os.path.join(args.work_idr, 'reclaimed_bundles')
-    if not os.path.exists(reclaimed_bundles_dir):
-        logging.debug('Reclaimed bundles dir %s doesn\'t exist, creating.', reclaimed_bundles_dir)
-        os.makedirs(reclaimed_bundles_dir, 0o770)
 
     docker_runtime = docker_utils.get_available_runtime()
     image_manager = DockerImageManager(
@@ -219,7 +215,6 @@ def main():
         args.tag,
         args.work_dir,
         local_bundles_dir,
-        reclaimed_bundles_dir,
         args.exit_when_idle,
         args.idle_seconds,
         bundle_service,
@@ -255,7 +250,7 @@ def parse_cpuset_args(arg):
     except AttributeError:
         # os.sched_getaffinity() isn't available on all platforms,
         # so fallback to using the number of physical cores.
-        cpu_count = multiprocessing.cpu_count()
+        cpu_count = 4
 
     if arg == 'ALL':
         cpuset = list(range(cpu_count))

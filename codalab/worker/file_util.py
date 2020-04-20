@@ -7,7 +7,6 @@ import subprocess
 import tarfile
 import zlib
 import bz2
-from pathlib import Path
 
 from codalab.common import BINARY_PLACEHOLDER
 
@@ -294,7 +293,3 @@ def remove_path(path):
             shutil.rmtree(path)
         else:
             os.remove(path)
-
-
-def touch_file(path):
-    Path(path).touch(exist_ok=True)

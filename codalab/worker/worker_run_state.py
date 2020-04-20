@@ -26,6 +26,10 @@ class RunStage(object):
 
     WORKER_STATE_TO_SERVER_STATE = {}
 
+    """
+    This stage will collect bundles in [PREPARING, RUNNING] state and sent 
+    them back to STAGED state
+    """
     RECLAIMED = 'RUN_STAGE.RECLAIMED'
     WORKER_STATE_TO_SERVER_STATE[RECLAIMED] = State.RECLAIMED
 
@@ -95,6 +99,7 @@ RunState = namedtuple(
         'kill_message',  # Optional[str]
         'finished',  # bool
         'finalized',  # bool
+        'is_reclaimed', # bool
     ],
 )
 
@@ -120,10 +125,8 @@ class RunStateMachine(StateTransitioner):
         upload_bundle_callback,  # Function to call to upload bundle results to the server
         assign_cpu_and_gpu_sets_fn,  # Function to call to assign CPU and GPU resources to each run
         shared_file_system,  # If True, bundle mount is shared with server
-        reclaimed_bundles_dir,
     ):
         super(RunStateMachine, self).__init__()
-        self.add_transition(RunStage.RECLAIMED, self._transition_from_RECLAIMED)
         self.add_transition(RunStage.PREPARING, self._transition_from_PREPARING)
         self.add_transition(RunStage.RUNNING, self._transition_from_RUNNING)
         self.add_transition(RunStage.CLEANING_UP, self._transition_from_CLEANING_UP)
@@ -147,17 +150,12 @@ class RunStateMachine(StateTransitioner):
         self.upload_bundle_callback = upload_bundle_callback
         self.assign_cpu_and_gpu_sets_fn = assign_cpu_and_gpu_sets_fn
         self.shared_file_system = shared_file_system
-        self.reclaimed_bundles_dir = reclaimed_bundles_dir
 
     def stop(self):
         for uuid in self.disk_utilization.keys():
             self.disk_utilization[uuid]['running'] = False
         self.disk_utilization.stop()
         self.uploading.stop()
-
-    def _transition_from_RECLAIMED(self, run_state):
-        # set flag of those bundles in reclaimed_bundle_dir
-        touch_file(os.path.join(self.reclaimed_bundles_dir, run_state.bundle.uuid))
 
     def _transition_from_PREPARING(self, run_state):
         """
@@ -172,7 +170,9 @@ class RunStateMachine(StateTransitioner):
             - Start the docker container
         4- If all is successful, move to RUNNING state
         """
-        if run_state.is_killed:
+
+        logger.info("_transition_from_PREPARING: is_killed = {}, is_reclaimed = {}".format(run_state.is_killed, run_state.is_reclaimed))
+        if run_state.is_killed or run_state.is_reclaimed:
             return run_state._replace(stage=RunStage.CLEANING_UP)
 
         # Check CPU and GPU availability
@@ -184,7 +184,7 @@ class RunStateMachine(StateTransitioner):
             message = "Unexpectedly unable to assign enough resources: %s" % str(e)
             logger.error(message)
             logger.error(traceback.format_exc())
-            return run_state._replace(stage=RunStage.RECLAIMED)
+            return run_state._replace(stage=RunStage.CLEANING_UP, is_reclaimed=True)
 
         dependencies_ready = True
         status_messages = []
@@ -405,7 +405,9 @@ class RunStateMachine(StateTransitioner):
         run_state = check_and_report_finished(run_state)
         run_state = check_resource_utilization(run_state)
 
-        if run_state.is_killed:
+        logger.info("run_state.is_reclaimed = {}, is_killed = {}".format(run_state.is_reclaimed, run_state.is_killed))
+
+        if run_state.is_killed or run_state.is_reclaimed:
             if docker_utils.container_exists(run_state.container):
                 try:
                     run_state.container.kill()
@@ -466,6 +468,12 @@ class RunStateMachine(StateTransitioner):
                 remove_path(child_path)
             except Exception:
                 logger.error(traceback.format_exc())
+
+        if run_state.is_reclaimed:
+            run_state = run_state._replace(stage=RunStage.RECLAIMED)
+            logger.info("CLEANING_UP reaching the bundle state = {}".format(run_state.stage))
+
+            return run_state
 
         if not self.shared_file_system and run_state.has_contents:
             # No need to upload results since results are directly written to bundle store
@@ -538,6 +546,8 @@ class RunStateMachine(StateTransitioner):
         """
         Prepare the finalize message to be sent with the next checkin
         """
+        logger.info("finalize_run bundle state = {}".format(run_state.bundle.state))
+
         if run_state.is_killed:
             # Append kill_message, which contains more useful info on why a run was killed, to the failure message.
             failure_message = (
@@ -553,6 +563,8 @@ class RunStateMachine(StateTransitioner):
         If a full worker cycle has passed since we got into FINALIZING we already reported to
         server so can move on to FINISHED. Can also remove bundle_path now
         """
+        logger.info("_transition_from_FINALIZING bundle state = {}".format(run_state.bundle.state))
+
         if run_state.finalized:
             if not self.shared_file_system:
                 remove_path(run_state.bundle_path)  # don't remove bundle if shared FS

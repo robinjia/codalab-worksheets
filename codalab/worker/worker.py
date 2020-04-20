@@ -16,7 +16,7 @@ import codalab.worker.docker_utils as docker_utils
 from .bundle_service_client import BundleServiceException
 from .download_util import BUNDLE_NO_LONGER_RUNNING_MESSAGE
 from .state_committer import JsonStateCommitter
-from .bundle_state import BundleInfo, RunResources, BundleCheckinState
+from .bundle_state import BundleInfo, RunResources, BundleCheckinState,State
 from .worker_run_state import RunStateMachine, RunStage, RunState
 from .reader import Reader
 
@@ -55,7 +55,6 @@ class Worker:
         tag,  # type: str
         work_dir,  # type: str
         local_bundles_dir,  # type: Optional[str]
-        reclaimed_bundles_dir,  # type: Optional[str]
         exit_when_idle,  # type: str
         idle_seconds,  # type: int
         bundle_service,  # type: BundleServiceClient
@@ -85,17 +84,18 @@ class Worker:
 
         self.work_dir = work_dir
         self.local_bundles_dir = local_bundles_dir
-        self.reclaimed_bundles_dir = reclaimed_bundles_dir
         self.shared_file_system = shared_file_system
 
         self.exit_when_idle = exit_when_idle
         self.idle_seconds = idle_seconds
 
         self.stop = False
+        self.terminate = False
         self.last_checkin_successful = False
         self.last_time_ran = None  # type: Optional[bool]
 
         self.runs = {}  # type: Dict[str, RunState]
+        self.reclaimed_bundles = {}
         self.init_docker_networks(docker_network_prefix)
         self.run_state_manager = RunStateMachine(
             docker_image_manager=self.image_manager,
@@ -107,7 +107,6 @@ class Worker:
             upload_bundle_callback=self.upload_bundle_contents,
             assign_cpu_and_gpu_sets_fn=self.assign_cpu_and_gpu_sets,
             shared_file_system=self.shared_file_system,
-            reclaimed_bundles_dir=self.reclaimed_bundles_dir,
         )
 
     def init_docker_networks(self, docker_network_prefix):
@@ -183,9 +182,13 @@ class Worker:
                 self.save_state()
                 self.checkin()
                 self.save_state()
+                if self.terminate:
+                    if self.reclaiming_bundles() == 0:
+                        self.stop = True
+                        self.send_staged_bundles_back()
+
                 if self.check_idle_stop():
                     self.stop = True
-                    break
             except Exception:
                 self.last_checkin_successful = False
                 traceback.print_exc()
@@ -215,7 +218,25 @@ class Worker:
         logger.info("Stopped Worker. Exiting")
 
     def signal(self):
-        self.stop = True
+        self.terminate = True
+
+    def reclaiming_bundles(self):
+        unfinished_bundles = []
+        for uuid in self.runs:
+            run_state = self.runs[uuid]
+            if run_state.stage not in [RunStage.FINISHED, RunStage.RECLAIMED]:
+                self.reclaim(uuid)
+                logger.info("reclaiming bundle: {}, stage = {}, is_reclaimed = {}".format(uuid, run_state.stage, run_state.is_reclaimed))
+                unfinished_bundles.append(uuid)
+        return len(unfinished_bundles)
+
+    def send_staged_bundles_back(self):
+        self.runs = {uuid: run_state for uuid, run_state in self.runs.items() if run_state.stage == RunStage.RECLAIMED}
+        logger.info("Sending staged bundles back {}".format(self.runs.keys()))
+        self.checkin()
+        # reset the current runs
+        self.runs ={uuid: run_state for uuid, run_state in self.runs.items() if run_state.stage not in [RunStage.RECLAIMED, RunStage.FINISHED]}
+        self.save_state()
 
     @property
     def cached_dependencies(self):
@@ -294,11 +315,6 @@ class Worker:
 
     def process_runs(self):
         """ Transition each run then filter out finished runs """
-        # 1. exclude processing runs that will be sent back to the staged state
-        reclaimed_uuids = os.listdir(self.reclaimed_bundles_dir)
-        self.runs = {
-            uuid: run_state for uuid, run_state in self.runs.items() if uuid not in reclaimed_uuids
-        }
         # 2. transition all runs
         for uuid in self.runs:
             run_state = self.runs[uuid]
@@ -321,8 +337,9 @@ class Worker:
         self.runs = {
             uuid: run_state
             for uuid, run_state in self.runs.items()
-            if run_state.stage != RunStage.FINISHED
+            if run_state.stage not in [RunStage.FINISHED]
         }
+        logger.info("runs are = {}".format(self.runs.keys()))
 
     def assign_cpu_and_gpu_sets(self, request_cpus, request_gpus):
         """
@@ -456,6 +473,7 @@ class Worker:
                 kill_message=None,
                 finished=False,
                 finalized=False,
+                is_reclaimed=False,
             )
         else:
             print(
@@ -468,6 +486,9 @@ class Worker:
         Marks the run as killed so that the next time its state is processed it is terminated.
         """
         self.runs[uuid] = self.runs[uuid]._replace(kill_message='Kill requested', is_killed=True)
+
+    def reclaim(self, uuid):
+        self.runs[uuid] = self.runs[uuid]._replace(is_reclaimed=True)
 
     def mark_finalized(self, uuid):
         """

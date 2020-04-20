@@ -72,6 +72,7 @@ class BundleManager(object):
         self._default_gpu_image = config.get('default_gpu_image')
 
         logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
+        self._testing_uuid = set()
 
     def run(self, sleep_time):
         logger.info('Bundle manager running!')
@@ -739,6 +740,10 @@ class BundleManager(object):
         staged_bundles_to_run = []
 
         for bundle in self._model.batch_get_bundles(state=State.STAGED, bundle_type='run'):
+
+            if bundle.uuid in self._testing_uuid:
+                continue
+            self._testing_uuid.add(bundle.uuid)
             # Cache those visited user information
             if bundle.owner_id in user_info_cache:
                 user_info = user_info_cache[bundle.owner_id]
