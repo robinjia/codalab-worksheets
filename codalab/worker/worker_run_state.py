@@ -406,12 +406,6 @@ class RunStateMachine(StateTransitioner):
         run_state = check_and_report_finished(run_state)
         run_state = check_resource_utilization(run_state)
 
-        logger.info(
-            "run_state.is_reclaimed = {}, is_killed = {}".format(
-                run_state.is_reclaimed, run_state.is_killed
-            )
-        )
-
         if run_state.is_killed or run_state.is_reclaimed:
             if docker_utils.container_exists(run_state.container):
                 try:

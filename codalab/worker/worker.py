@@ -16,7 +16,7 @@ import codalab.worker.docker_utils as docker_utils
 from .bundle_service_client import BundleServiceException
 from .download_util import BUNDLE_NO_LONGER_RUNNING_MESSAGE
 from .state_committer import JsonStateCommitter
-from .bundle_state import BundleInfo, RunResources, BundleCheckinState, State
+from .bundle_state import BundleInfo, RunResources, BundleCheckinState
 from .worker_run_state import RunStateMachine, RunStage, RunState
 from .reader import Reader
 
