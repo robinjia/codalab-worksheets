@@ -808,50 +808,6 @@ class BundleModel(object):
             )
             return True
 
-    def transition_bundle_reclaimed(self, bundle):
-        """
-        Transitions bundle from RECLAIMED state to STAGED state:
-            Returns False if the bundle was not in RECLAIMED state.
-            Clears the job_handle metadata and removes the worker_run row.
-        """
-        with self.engine.begin() as connection:
-            logger.info(
-                "IN transition_bundle_reclaimed....!!!!! bundle state = {}".format(bundle.state)
-            )
-
-            # Make sure the bundle still exist in the database.
-            row = connection.execute(
-                cl_bundle.select().where(cl_bundle.c.id == bundle.id)
-            ).fetchone()
-            if not row:
-                raise IntegrityError('Missing bundle with UUID %s' % bundle.uuid)
-
-            if row.state != State.RECLAIMED:
-                return False
-
-            metadata_update = {
-                'job_handle': None,
-                'started': None,
-                'run_status': None,
-                'last_updated': None,
-                'time': None,
-                'time_user': None,
-                'time_system': None,
-                'remote': None,
-            }
-            update_message = {'state': State.STAGED, 'metadata': metadata_update}
-            self.update_bundle(bundle, update_message, connection)
-            connection.execute(
-                cl_worker_run.delete().where(cl_worker_run.c.run_uuid == bundle.uuid)
-            )
-            logger.info("Update finished....")
-            # Make sure it's still starting.
-            row = connection.execute(
-                cl_bundle.select().where(cl_bundle.c.id == bundle.id)
-            ).fetchone()
-            logger.info("Updated new row = {}".format(row))
-            return True
-
     def transition_bundle_preparing(self, bundle, user_id, worker_id, start_time, remote):
         """
         Transitions bundle to PREPARING state:
