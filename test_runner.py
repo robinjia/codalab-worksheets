@@ -32,10 +32,11 @@ class TestRunner(object):
                 s.close()
             return ports
 
-        # rest_port = portpicker.pick_unused_port('')
-        # rest_port = 3000  # default is 2900
-        # http_port = portpicker.pick_unused_port('0.0.0.0')
         rest_port, http_port, mysql_port = get_free_ports(3)
+        # rest_port = portpicker.pick_unused_port('')
+        rest_port = 2900  # default is 2900
+        # http_port = portpicker.pick_unused_port('0.0.0.0')
+
         mysql_port = 3306  # Hardcoded for now
 
         # TODO: delete -tony
