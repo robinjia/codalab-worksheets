@@ -37,13 +37,13 @@ class TestRunner(object):
             while port <= max_port:
                 try:
                     sock.bind(('0.0.0.0', port))
-                    sock.close()
                     result = sock.connect_ex(('0.0.0.0', port))
                     if result == 0:
                         print('Tony Found a port: ' + str(port))
                         return port
                     else:
-                        print('Tony Non-zero result for port' + str(port))
+                        print('Tony Non-zero result for port: ' + str(port))
+                    sock.close()
                 except OSError:
                     port += 1
             raise IOError('no free ports')
