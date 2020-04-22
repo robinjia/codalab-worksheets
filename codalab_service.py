@@ -588,12 +588,12 @@ class CodalabServiceManager(object):
             compose_files_str,
             cmd,
         )
-        # if use_alternate_port:
-        #     command_string = 'docker-compose -p %s %s %s' % (
-        #         self.args.instance_name,
-        #         compose_files_str,
-        #         cmd,
-        #     )
+        if use_alternate_port:
+            command_string = 'docker-compose -p %s %s %s' % (
+                self.args.instance_name,
+                compose_files_str,
+                cmd,
+            )
 
         compose_env_string = ' '.join('{}={}'.format(k, v) for k, v in self.compose_env.items())
         print('(cd {}; {} {})'.format(self.compose_cwd, compose_env_string, command_string))
