@@ -4,6 +4,7 @@ from test_cli import TestModule
 import argparse
 import portpicker
 import random
+import socket
 import string
 import subprocess
 import sys
@@ -21,7 +22,6 @@ class TestRunner(object):
         print('Creating another CodaLab instance for testing...')
 
         def get_free_ports(num_ports):
-            import socket
 
             socks = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in range(num_ports)]
             for s in socks:
@@ -32,9 +32,26 @@ class TestRunner(object):
                 s.close()
             return ports
 
+        def next_free_port(port=1024, max_port=65535):
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            while port <= max_port:
+                try:
+                    sock.bind(('0.0.0.0', port))
+                    sock.close()
+                    result = sock.connect_ex(('0.0.0.0', port))
+                    if result == 0:
+                        print('Tony Found a port: ' + str(port))
+                        return port
+                    else:
+                        print('Non-zero result for port' + str(port))
+                except OSError:
+                    port += 1
+            raise IOError('no free ports')
+
         rest_port, http_port, mysql_port = get_free_ports(3)
         # rest_port = portpicker.pick_unused_port('')
         rest_port = 2900  # default is 2900
+        rest_port = next_free_port()
         # http_port = portpicker.pick_unused_port('0.0.0.0')
 
         mysql_port = 3306  # Hardcoded for now
