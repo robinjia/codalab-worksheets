@@ -1372,10 +1372,13 @@ def test(ctx):
     # TODO: remove below -tony
     """Test copying between instances."""
     source_worksheet = current_worksheet()
+    # TODO: delete -tony
     print('Tony - Testing copy - source_worksheet: ' + source_worksheet)
 
     with remote_instance(ctx.second_instance) as remote:
         remote_worksheet = remote.home
+        # TODO: delete -tony
+        print('Tony copy - remote_worksheet: ' + remote_worksheet)
         _run_command([cl, 'work', remote_worksheet])
 
         def check_agree(command):
