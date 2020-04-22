@@ -41,6 +41,7 @@ class TestRunner(object):
                     if result == 0:
                         print('Tony Found a port: ' + str(port))
                         sock.listen(5)
+                        print('Tony returning port: ' + str(port))
                         return port
                     else:
                         print('Tony Non-zero result for port: ' + str(port))
