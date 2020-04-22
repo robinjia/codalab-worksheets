@@ -26,7 +26,7 @@ class TestRunner(object):
             socks = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in range(num_ports)]
             for s in socks:
                 # When binding a socket to port 0, the kernel will assign it a free port
-                s.bind(('0.0.0.0', 0))
+                s.bind(('', 0))
             ports = [str(s.getsockname()[1]) for s in socks]
             for s in socks:
                 s.close()
