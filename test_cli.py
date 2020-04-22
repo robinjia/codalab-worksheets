@@ -371,8 +371,6 @@ class TestModule(object):
             - localhost
             - http://server-domain:2900
         """
-        # TODO: remove the following -tony
-        print('4. Tony Running...')
         # Might prompt user for password
         subprocess.call([cl, 'work', '%s::' % instance])
 
@@ -1372,9 +1370,9 @@ def test(ctx):
 @TestModule.register('copy')
 def test(ctx):
     # TODO: remove below -tony
-    print('Tony - Testing copy')
     """Test copying between instances."""
     source_worksheet = current_worksheet()
+    print('Tony - Testing copy - source_worksheet: ' + source_worksheet)
 
     with remote_instance(ctx.second_instance) as remote:
         remote_worksheet = remote.home
