@@ -29,7 +29,7 @@ class TestRunner(object):
                 s.bind(('', 0))
             ports = [str(s.getsockname()[1]) for s in socks]
             for s in socks:
-                s.close()
+                s.listen(5)
             return ports
 
         def next_free_port(port=1024, max_port=65535):
@@ -52,9 +52,8 @@ class TestRunner(object):
             raise IOError('no free ports')
 
         rest_port, http_port, mysql_port = get_free_ports(3)
-        # rest_port = portpicker.pick_unused_port('')
-        rest_port = 2900  # default is 2900
-        rest_port = next_free_port()
+        # rest_port = 2900  # default is 2900
+        # rest_port = next_free_port()
         # http_port = portpicker.pick_unused_port('0.0.0.0')
 
         mysql_port = 3306  # Hardcoded for now
