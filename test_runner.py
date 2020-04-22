@@ -22,7 +22,6 @@ class TestRunner(object):
         print('Creating another CodaLab instance for testing...')
 
         def get_free_ports(num_ports):
-
             socks = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in range(num_ports)]
             for s in socks:
                 # When binding a socket to port 0, the kernel will assign it a free port
@@ -78,7 +77,7 @@ class TestRunner(object):
                         '--mysql-port %s' % mysql_port,
                         '--version %s' % version,
                         # '--services default',
-                        '--services rest-server init',
+                        '--services rest-server init mysql',
                     ]
                 ),
                 shell=True,
