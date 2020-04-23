@@ -51,16 +51,10 @@ class TestRunner(object):
             raise IOError('no free ports')
 
         rest_port, http_port = get_free_ports(2)
-        # rest_port = 2900  # default is 2900
-        # rest_port = next_free_port()
-        # http_port = portpicker.pick_unused_port('0.0.0.0')
+        rest_port = 2900  # default is 2900
 
         # TODO: delete -tony
-        print(
-            '1. Tony rest_port: {}, http_port: {}'.format(
-                rest_port, http_port
-            )
-        )
+        print('1. Tony rest_port: {}, http_port: {}'.format(rest_port, http_port))
         instance = 'http://rest-server:%s' % rest_port
         try:
             subprocess.check_call(
