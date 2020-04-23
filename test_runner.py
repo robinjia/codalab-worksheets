@@ -50,17 +50,15 @@ class TestRunner(object):
                     port += 1
             raise IOError('no free ports')
 
-        rest_port, http_port, mysql_port = get_free_ports(3)
+        rest_port, http_port = get_free_ports(2)
         # rest_port = 2900  # default is 2900
         # rest_port = next_free_port()
         # http_port = portpicker.pick_unused_port('0.0.0.0')
 
-        mysql_port = 3306  # Hardcoded for now
-
         # TODO: delete -tony
         print(
-            '1. Tony rest_port: {}, http_port: {}, mysql_port: {}'.format(
-                rest_port, http_port, mysql_port
+            '1. Tony rest_port: {}, http_port: {}'.format(
+                rest_port, http_port
             )
         )
         instance = 'http://rest-server:%s' % rest_port
@@ -73,10 +71,9 @@ class TestRunner(object):
                         'start',
                         '--instance-name %s' % name,
                         '--rest-port %s' % rest_port,
-                        '--http-port %s' % http_port,
-                        '--mysql-port %s' % mysql_port,
+                        # '--http-port %s' % http_port,
                         '--version %s' % version,
-                        '--services default',
+                        '--services init rest-server bundle-manager',
                         # '--services rest-server',
                     ]
                 ),
