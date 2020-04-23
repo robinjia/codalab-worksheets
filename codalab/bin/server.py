@@ -80,6 +80,7 @@ def main():
         run_server_with_watch()
     else:
         from codalab.server.rest_server import run_rest_server
+
         print('Tony - creating server with default CodaLabManager')
         run_rest_server(CodaLabManager(), args.debug, args.processes, args.threads)
 
