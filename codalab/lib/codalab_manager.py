@@ -137,6 +137,8 @@ class CodaLabManager(object):
         if not os.path.exists(self.config_path):
             self.init_config()
         self.config = read_json_or_die(self.config_path)
+        # TODO: delete tony
+        print('Tony: ' + str(self.config))
 
         # TODO: get rid of this
         # Substitute environment variables
