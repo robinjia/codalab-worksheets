@@ -104,9 +104,7 @@ class TestRunner(object):
 
     def run(self):
         try:
-            test_command = 'python3 test_cli.py --instance {} --second-instance {} {} '.format(
-                self.instance, self.temp_instance, ' '.join(self.tests)
-            )
+            test_command = 'python3 test_cli.py --instance %s '.format(self.instance)
             if self.temp_instance_required:
                 test_command += '--second-instance %s ' % self.temp_instance
 
