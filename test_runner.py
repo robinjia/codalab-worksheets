@@ -2,7 +2,6 @@
 from test_cli import TestModule
 
 import argparse
-import portpicker
 import random
 import socket
 import string
@@ -12,6 +11,7 @@ import sys
 
 class TestRunner(object):
     _CODALAB_SERVICE_EXECUTABLE = 'codalab_service.py'
+    _TEST_INSTANCE_NEEDED_TESTS = ['all', 'default', 'copy']
 
     @staticmethod
     def _docker_exec(command):
@@ -90,31 +90,30 @@ class TestRunner(object):
 
     def __init__(self, instance, tests):
         self.instance = instance
-        self.temp_instance_name = 'temp-instance%s' % ''.join(
-            random.choice(string.digits) for _ in range(8)
-        )
-        self.temp_instance = TestRunner._create_temp_instance(self.temp_instance_name)
         self.tests = tests
 
-    def run(self):
-        # TODO: delete the following -tony
-        print('Tony - Running tests on version {}...'.format(version))
+        # Check if a second, temporary instance of CodaLab is needed for testing
+        self.temp_instance_required = any(
+            test in tests for test in TestRunner._TEST_INSTANCE_NEEDED_TESTS
+        )
+        if self.temp_instance_required:
+            self.temp_instance_name = 'temp-instance%s' % ''.join(
+                random.choice(string.digits) for _ in range(8)
+            )
+            self.temp_instance = TestRunner._create_temp_instance(self.temp_instance_name)
 
+    def run(self):
         try:
+            test_command = 'python3 test_cli.py --instance {} --second-instance {} {} '.format(
+                self.instance, self.temp_instance, ' '.join(self.tests)
+            )
+            if self.temp_instance_required:
+                test_command += '--second-instance %s ' % self.temp_instance
+
+            test_command += ' '.join(self.tests)
             # TODO: remove -tony
-            print(
-                'python3 test_cli.py --instance {} --second-instance {} {}'.format(
-                    self.instance, self.temp_instance, ' '.join(self.tests)
-                )
-            )
-            subprocess.check_call(
-                TestRunner._docker_exec(
-                    'python3 test_cli.py --instance {} --second-instance {} {}'.format(
-                        self.instance, self.temp_instance, ' '.join(self.tests)
-                    )
-                ),
-                shell=True,
-            )
+            print('Tony: test command - ' + test_command)
+            subprocess.check_call(TestRunner._docker_exec(test_command), shell=True)
         except subprocess.CalledProcessError as ex:
             print('Exception while executing tests: %s' % ex.output)
             raise
@@ -122,6 +121,9 @@ class TestRunner(object):
         self._cleanup()
 
     def _cleanup(self):
+        if not self.temp_instance_required:
+            return
+
         print('Shutting down the temp instance {}...'.format(self.temp_instance_name))
         subprocess.check_call(
             ' '.join(
