@@ -189,7 +189,7 @@ class CodaLabManager(object):
             'cli': {'default_address': MAIN_BUNDLE_SERVICE, 'verbose': 1},
             'server': {
                 'rest_host': 'localhost',
-                'rest_port': 3000,
+                'rest_port': 2900,
                 'class': 'MySQLModel',
                 'engine_url': 'mysql://codalab@localhost:3306/codalab_bundles',
                 'auth': {'class': 'RestOAuthHandler'},

@@ -684,6 +684,7 @@ class CodalabServiceManager(object):
                     ('cli/default_address', rest_url),
                     ('server/engine_url', mysql_url),
                     ('server/rest_host', '0.0.0.0'),
+                    ('server/rest_port', self.args.rest_port),
                     ('server/admin_email', self.args.admin_email),
                     ('server/support_email', self.args.support_email),  # Use support_email
                     ('server/default_user_info/disk_quota', self.args.user_disk_quota),
