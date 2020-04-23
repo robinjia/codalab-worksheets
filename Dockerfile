@@ -40,7 +40,7 @@ COPY requirements-server.txt requirements-server.txt
 RUN python3 -m pip install -r requirements-server.txt
 
 # Install code
-COPY dockerbuild ./
+COPY dockerfile ./
 
 RUN python3 -m pip install -e .
 
