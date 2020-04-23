@@ -202,6 +202,9 @@ class CodaLabManager(object):
             },
         }
 
+        # TODO: delete tony
+        print('Tony: just print' + str(self.config))
+
         # Generate secret key
         config['server']['secret_key'] = get_random_string(
             48, "=+/abcdefghijklmnopqrstuvwxyz" "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
