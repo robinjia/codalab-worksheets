@@ -31,30 +31,8 @@ class TestRunner(object):
                 s.listen(5)
             return ports
 
-        def next_free_port(port=1024, max_port=65535):
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            while port <= max_port:
-                try:
-                    sock.bind(('', port))
-                    result = sock.connect_ex(('', port))
-                    if result == 0:
-                        print('Tony Found a port: ' + str(port))
-                        sock.listen(5)
-                        print('Tony returning port: ' + str(port))
-                        return port
-                    else:
-                        print('Tony Non-zero result for port: ' + str(port))
-                        sock.close()
-                        port += 1
-                except OSError:
-                    port += 1
-            raise IOError('no free ports')
-
-        rest_port, http_port = get_free_ports(2)
+        rest_port = get_free_ports(1)
         rest_port = 2900  # default is 2900
-
-        # TODO: delete -tony
-        print('1. Tony rest_port: {}, http_port: {}'.format(rest_port, http_port))
         instance = 'http://rest-server:%s' % rest_port
         try:
             subprocess.check_call(
