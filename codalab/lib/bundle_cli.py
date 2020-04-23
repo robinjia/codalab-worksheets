@@ -1042,6 +1042,7 @@ class BundleCLI(object):
             self.manager.save_config()
         else:  # Print out value
             print(config[key])
+        print('Tony: config modified!!!! ' + str(self.manager.config))
 
     @Commands.command(
         'workers',
