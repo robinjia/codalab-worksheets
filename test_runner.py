@@ -71,6 +71,7 @@ class TestRunner(object):
             self.temp_instance = TestRunner._create_temp_instance(self.temp_instance_name)
 
     def run(self):
+        success = True
         try:
             test_command = 'python3 test_cli.py --instance %s ' % self.instance
             if self.temp_instance_required:
@@ -82,9 +83,10 @@ class TestRunner(object):
             subprocess.check_call(TestRunner._docker_exec(test_command), shell=True)
         except subprocess.CalledProcessError as ex:
             print('Exception while executing tests: %s' % ex.output)
-            raise
+            success = False
 
         self._cleanup()
+        return success
 
     def _cleanup(self):
         if not self.temp_instance_required:
