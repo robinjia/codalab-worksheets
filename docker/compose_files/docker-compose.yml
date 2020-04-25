@@ -77,6 +77,8 @@ services:
     <<: *codalab-server
     depends_on:
       - mysql
+    networks:
+      - service
 
   bundle-manager:
     image: codalab/server:${CODALAB_VERSION}
