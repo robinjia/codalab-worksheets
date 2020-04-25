@@ -31,7 +31,7 @@ class TestRunner(object):
                 s.listen(5)
             return ports
 
-        rest_port = get_free_ports(1)[0]
+        rest_port, http_port = get_free_ports(2)
         # rest_port = 2900  # default is 2900
         instance = 'http://rest-server:%s' % rest_port
         try:
@@ -43,7 +43,7 @@ class TestRunner(object):
                         'start',
                         '--instance-name %s' % name,
                         '--rest-port %s' % rest_port,
-                        # '--http-port %s' % http_port,
+                        '--http-port %s' % http_port,
                         '--version %s' % version,
                         # '--services init rest-server bundle-manager mysql',
                         # '--services rest-server',
