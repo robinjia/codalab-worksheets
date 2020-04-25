@@ -31,8 +31,8 @@ class TestRunner(object):
                 s.listen(5)
             return ports
 
-        rest_port = get_free_ports(1)
-        #rest_port = 2900  # default is 2900
+        rest_port = get_free_ports(1)[0]
+        # rest_port = 2900  # default is 2900
         instance = 'http://rest-server:%s' % rest_port
         try:
             subprocess.check_call(
