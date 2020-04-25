@@ -1367,7 +1367,7 @@ def test(ctx):
     wait(_run_command([cl, 'run', 'ping -c 1 google.com', '--request-network']), 0)
 
 
-@TestModule.register('copy')
+@TestModule.register('copy', default=False)
 def test(ctx):
     # TODO: remove below -tony
     """Test copying between instances."""
