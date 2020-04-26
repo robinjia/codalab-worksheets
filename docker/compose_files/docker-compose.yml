@@ -78,7 +78,7 @@ services:
     depends_on:
       - mysql
     networks:
-      - service
+      - rest-server
 
   bundle-manager:
     image: codalab/server:${CODALAB_VERSION}
@@ -218,6 +218,8 @@ services:
       - ${CODALAB_MONITOR_DIR}:${CODALAB_MONITOR_DIR}
 
 networks:
+  rest-server:
+    name: 'rest-server'
   worker:
     name: ${CODALAB_WORKER_NETWORK_PREFIX}_general # Make sure this is synced with the suffix set in worker/worker.py in network initialization.
     internal: True
