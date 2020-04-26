@@ -53,7 +53,9 @@ class TestRunner(object):
                 ),
                 shell=True,
             )
-            print('It took {} seconds to create the temp instance.'.format(time.time() - start_time))
+            print(
+                'It took {} seconds to create the temp instance.'.format(time.time() - start_time)
+            )
         except subprocess.CalledProcessError as ex:
             print('Temp instance exception: %s' % ex.output)
             raise
