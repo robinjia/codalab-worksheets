@@ -31,6 +31,7 @@ class TestRunner(object):
             return ports
 
         rest_port, http_port = get_free_ports(2)
+        rest_port = 3000
         instance = 'http://rest-server:%s' % rest_port
         print('Creating another CodaLab instance {} at {} for testing...'.format(name, instance))
 
