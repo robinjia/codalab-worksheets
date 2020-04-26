@@ -176,7 +176,7 @@ def wait_until_substring(fp, substr):
 def _run_command(
     args,
     expected_exit_code=0,
-    max_output_chars=4096,
+    max_output_chars=9086,
     env=None,
     include_stderr=False,
     binary=False,
