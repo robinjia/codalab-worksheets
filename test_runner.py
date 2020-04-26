@@ -32,7 +32,6 @@ class TestRunner(object):
             return ports
 
         rest_port, http_port = get_free_ports(2)
-        # rest_port = 3000  # default is 2900
         instance = 'http://rest-server:%s' % rest_port
 
         try:
@@ -47,7 +46,7 @@ class TestRunner(object):
                         # '--http-port %s' % http_port,
                         '--version %s' % version,
                         # '--services init rest-server mysql',
-                        '--services init rest-server',
+                        # '--services init rest-server',
                     ]
                 ),
                 shell=True,
