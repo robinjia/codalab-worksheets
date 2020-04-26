@@ -47,7 +47,7 @@ class TestRunner(object):
                         # '--http-port %s' % http_port,
                         '--version %s' % version,
                         # '--services init rest-server mysql',
-                        '--services rest-server',
+                        '--services init rest-server',
                     ]
                 ),
                 shell=True,
