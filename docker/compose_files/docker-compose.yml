@@ -79,6 +79,8 @@ services:
       - mysql
     networks:
       - rest-server
+    expose:
+      - ${CODALAB_REST_PORT}
 
   bundle-manager:
     image: codalab/server:${CODALAB_VERSION}
