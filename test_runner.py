@@ -46,7 +46,7 @@ class TestRunner(object):
                         # '--http-port %s' % http_port,
                         '--version %s' % version,
                         # '--services init rest-server mysql',
-                        '--services init rest-server',
+                        '--services init rest-server bundle-manager',
                     ]
                 ),
                 shell=True,
