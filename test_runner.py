@@ -19,15 +19,18 @@ class TestRunner(object):
 
     @staticmethod
     def _create_temp_instance(name):
-        def get_free_port():
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.bind(('', 0))
-            port = str(s.getsockname()[1])
-            # Queue up to 5 requests
-            s.listen(5)
-            return port
+        def get_free_ports(num_ports):
+            socks = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in range(num_ports)]
+            for s in socks:
+                # When binding a socket to port 0, the kernel will assign it a free port
+                s.bind(('', 0))
+            ports = [str(s.getsockname()[1]) for s in socks]
+            for s in socks:
+                # Queue up to 5 requests
+                s.listen(5)
+            return ports
 
-        rest_port = get_free_port()
+        rest_port, http_port = get_free_ports(2)
         instance = 'http://rest-server:%s' % rest_port
         print('Creating another CodaLab instance {} at {} for testing...'.format(name, instance))
 
