@@ -1378,9 +1378,8 @@ def test(ctx):
         remote_worksheet = remote.home
         # TODO: delete -tony
         print('Tony copy - remote_worksheet: ' + remote_worksheet)
-        _run_command([cl, 'work', remote_worksheet])
 
-        def check_agree(command):
+        def compare_output(command):
             check_equals(
                 _run_command(command + ['-w', remote_worksheet]),
                 _run_command(command + ['-w', source_worksheet]),
@@ -1390,15 +1389,15 @@ def test(ctx):
         _run_command([cl, 'work', source_worksheet])
         uuid = _run_command([cl, 'upload', test_path('')])
         _run_command([cl, 'add', 'bundle', uuid, '--dest-worksheet', remote_worksheet])
-        check_agree([cl, 'info', '-f', 'data_hash,name', uuid])
-        # check_agree([cl, 'cat', uuid])
+        compare_output([cl, 'info', '-f', 'data_hash,name', uuid])
+        # compare_output([cl, 'cat', uuid])
 
         # Upload to remote, transfer to local
         _run_command([cl, 'work', remote_worksheet])
         uuid = _run_command([cl, 'upload', test_path('')])
         _run_command([cl, 'add', 'bundle', uuid, '--dest-worksheet', source_worksheet])
-        check_agree([cl, 'info', '-f', 'data_hash,name', uuid])
-        # check_agree([cl, 'cat', uuid])
+        compare_output([cl, 'info', '-f', 'data_hash,name', uuid])
+        # compare_output([cl, 'cat', uuid])
 
         # Upload to remote, transfer to local (metadata only)
         _run_command([cl, 'work', remote_worksheet])

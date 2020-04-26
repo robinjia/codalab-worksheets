@@ -7,6 +7,7 @@ import socket
 import string
 import subprocess
 import sys
+import time
 
 
 class TestRunner(object):
@@ -35,6 +36,7 @@ class TestRunner(object):
         instance = 'http://rest-server:%s' % rest_port
 
         try:
+            start_time = time.time()
             subprocess.check_call(
                 ' '.join(
                     [
@@ -46,11 +48,12 @@ class TestRunner(object):
                         # '--http-port %s' % http_port,
                         '--version %s' % version,
                         # '--services init rest-server mysql',
-                        '--services init rest-server bundle-manager',
+                        '--services init rest-server',
                     ]
                 ),
                 shell=True,
             )
+            print('It took {} seconds to create the temp instance.'.format(time.time() - start_time))
         except subprocess.CalledProcessError as ex:
             print('Temp instance exception: %s' % ex.output)
             raise
