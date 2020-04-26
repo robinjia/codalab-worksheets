@@ -18,7 +18,7 @@ class TestRunner(object):
         return 'docker exec -it codalab_rest-server_1 /bin/bash -c "{}"'.format(command)
 
     @staticmethod
-    def _create_temp_instance(name):
+    def _create_temp_instance(name, version, rest_port):
         def get_free_ports(num_ports):
             socks = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in range(num_ports)]
             for s in socks:
@@ -30,8 +30,7 @@ class TestRunner(object):
                 s.listen(5)
             return ports
 
-        rest_port, http_port = get_free_ports(2)
-        rest_port = 3000
+        # rest_port, http_port = get_free_ports(2)
         instance = 'http://rest-server:%s' % rest_port
         print('Creating another CodaLab instance {} at {} for testing...'.format(name, instance))
 
@@ -60,19 +59,21 @@ class TestRunner(object):
 
         return instance
 
-    def __init__(self, instance, tests):
-        self.instance = instance
-        self.tests = tests
+    def __init__(self, args):
+        self.instance = args.instance
+        self.tests = args.tests
 
         # Check if a second, temporary instance of CodaLab is needed for testing
         self.temp_instance_required = any(
-            test in tests for test in TestRunner._TEMP_INSTANCE_NEEDED_TESTS
+            test in self.tests for test in TestRunner._TEMP_INSTANCE_NEEDED_TESTS
         )
         if self.temp_instance_required:
             self.temp_instance_name = 'temp-instance%s' % ''.join(
                 random.choice(string.digits) for _ in range(8)
             )
-            self.temp_instance = TestRunner._create_temp_instance(self.temp_instance_name)
+            self.temp_instance = TestRunner._create_temp_instance(
+                self.temp_instance_name, args.version, args.temp_rest_port
+            )
 
     def run(self):
         success = True
@@ -128,12 +129,6 @@ if __name__ == '__main__':
         description='Runs the specified tests against the specified CodaLab instance (defaults to localhost)'
     )
     parser.add_argument(
-        '--cl-executable',
-        type=str,
-        help='Path to CodaLab CLI executable, defaults to "cl"',
-        default='cl',
-    )
-    parser.add_argument(
         '--version',
         type=str,
         help='CodaLab version to use for multi-instance tests, defaults to "latest"',
@@ -146,6 +141,12 @@ if __name__ == '__main__':
         default='http://rest-server:2900',
     )
     parser.add_argument(
+        '--temp-rest-port',
+        type=int,
+        help='Rest port for temp instance, defaults to 3000',
+        default=3000,
+    )
+    parser.add_argument(
         'tests',
         metavar='TEST',
         nargs='+',
@@ -155,8 +156,6 @@ if __name__ == '__main__':
     )
 
     args = parser.parse_args()
-    cl = args.cl_executable
-    version = args.version
-    test_runner = TestRunner(args.instance, args.tests)
+    test_runner = TestRunner(args)
     if not test_runner.run():
         sys.exit(1)
