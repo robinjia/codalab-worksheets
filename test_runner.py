@@ -11,7 +11,7 @@ import time
 
 class TestRunner(object):
     _CODALAB_SERVICE_SCRIPT = 'codalab_service.py'
-    _TEST_INSTANCE_NEEDED_TESTS = ['all', 'default', 'copy']
+    _TEMP_INSTANCE_NEEDED_TESTS = ['all', 'default', 'copy']
 
     @staticmethod
     def _docker_exec(command):
@@ -61,7 +61,7 @@ class TestRunner(object):
 
         # Check if a second, temporary instance of CodaLab is needed for testing
         self.temp_instance_required = any(
-            test in tests for test in TestRunner._TEST_INSTANCE_NEEDED_TESTS
+            test in tests for test in TestRunner._TEMP_INSTANCE_NEEDED_TESTS
         )
         if self.temp_instance_required:
             self.temp_instance_name = 'temp-instance%s' % ''.join(
@@ -72,19 +72,28 @@ class TestRunner(object):
     def run(self):
         success = True
         try:
+            # Run backend tests using test_cli
             test_command = 'python3 test_cli.py --instance %s ' % self.instance
             if self.temp_instance_required:
                 test_command += '--second-instance %s ' % self.temp_instance
             test_command += ' '.join(self.tests)
 
-            print('Executing tests with command: %s' % test_command)
+            print('Running backend tests with command: %s' % test_command)
             subprocess.check_call(TestRunner._docker_exec(test_command), shell=True)
+
+            if 'frontend' in self.tests:
+                self._run_frontend_tests()
+
         except subprocess.CalledProcessError as ex:
             print('Exception while executing tests: %s' % ex.output)
             success = False
 
         self._cleanup()
         return success
+
+    def _run_frontend_tests(self):
+        # Run Selenium UI tests
+        subprocess.check_call('python3 tests/ui/ui_tester.py --headless', shell=True)
 
     def _cleanup(self):
         if not self.temp_instance_required:
@@ -131,7 +140,7 @@ if __name__ == '__main__':
         metavar='TEST',
         nargs='+',
         type=str,
-        choices=list(TestModule.modules.keys()) + ['all', 'default'],
+        choices=list(TestModule.modules.keys()) + ['all', 'default', 'frontend'],
         help='Tests to run from: {%(choices)s}',
     )
 
