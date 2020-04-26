@@ -19,8 +19,6 @@ class TestRunner(object):
 
     @staticmethod
     def _create_temp_instance(name):
-        print('Creating another CodaLab instance for testing...')
-
         def get_free_port():
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.bind(('', 0))
@@ -30,6 +28,7 @@ class TestRunner(object):
 
         rest_port = get_free_port()
         instance = 'http://rest-server:%s' % rest_port
+        print('Creating another CodaLab instance {} at {} for testing...'.format(name, instance))
 
         try:
             start_time = time.time()
