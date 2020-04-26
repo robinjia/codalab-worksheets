@@ -144,7 +144,7 @@ if __name__ == '__main__':
         '--temp-rest-port',
         type=int,
         help='Rest port for temp instance, defaults to 3000',
-        default=3000,
+        default=58135,
     )
     parser.add_argument(
         'tests',
