@@ -92,6 +92,7 @@ class TestRunner(object):
         return success
 
     def _run_frontend_tests(self):
+        # TODO: when more frontend tests are added, execute it from here
         # Run Selenium UI tests
         subprocess.check_call('python3 tests/ui/ui_tester.py --headless', shell=True)
 
