@@ -1371,19 +1371,18 @@ def test(ctx):
 def test(ctx):
     """Test copying between instances."""
     source_worksheet = current_worksheet()
-    # TODO: delete -tony
-    print('Tony - Testing copy - source_worksheet: ' + source_worksheet)
+    print('Source worksheet: %s' % source_worksheet)
 
     with remote_instance(ctx.second_instance) as remote:
-        remote_worksheet = remote.home
-        # TODO: delete -tony
-        print('Tony copy - remote_worksheet: ' + remote_worksheet)
 
         def compare_output(command):
             check_equals(
                 _run_command(command + ['-w', remote_worksheet]),
                 _run_command(command + ['-w', source_worksheet]),
             )
+
+        remote_worksheet = remote.home
+        print('Remote_worksheet: %s' % remote_worksheet)
 
         # Upload to original worksheet, transfer to remote
         _run_command([cl, 'work', source_worksheet])

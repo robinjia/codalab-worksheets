@@ -1,4 +1,3 @@
-# from scripts.test_util import run_command
 from test_cli import TestModule
 
 import argparse
@@ -11,7 +10,7 @@ import time
 
 
 class TestRunner(object):
-    _CODALAB_SERVICE_EXECUTABLE = 'codalab_service.py'
+    _CODALAB_SERVICE_SCRIPT = 'codalab_service.py'
     _TEST_INSTANCE_NEEDED_TESTS = ['all', 'default', 'copy']
 
     @staticmethod
@@ -22,17 +21,14 @@ class TestRunner(object):
     def _create_temp_instance(name):
         print('Creating another CodaLab instance for testing...')
 
-        def get_free_ports(num_ports):
-            socks = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in range(num_ports)]
-            for s in socks:
-                # When binding a socket to port 0, the kernel will assign it a free port
-                s.bind(('', 0))
-            ports = [str(s.getsockname()[1]) for s in socks]
-            for s in socks:
-                s.listen(5)
-            return ports
+        def get_free_port():
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.bind(('', 0))
+            port = str(s.getsockname()[1])
+            s.close()
+            return port
 
-        rest_port, http_port = get_free_ports(2)
+        rest_port = get_free_port()
         instance = 'http://rest-server:%s' % rest_port
 
         try:
@@ -41,13 +37,11 @@ class TestRunner(object):
                 ' '.join(
                     [
                         'python3',
-                        TestRunner._CODALAB_SERVICE_EXECUTABLE,
+                        TestRunner._CODALAB_SERVICE_SCRIPT,
                         'start',
                         '--instance-name %s' % name,
                         '--rest-port %s' % rest_port,
-                        # '--http-port %s' % http_port,
                         '--version %s' % version,
-                        # '--services init rest-server mysql',
                         '--services init rest-server',
                     ]
                 ),
@@ -57,7 +51,7 @@ class TestRunner(object):
                 'It took {} seconds to create the temp instance.'.format(time.time() - start_time)
             )
         except subprocess.CalledProcessError as ex:
-            print('Temp instance exception: %s' % ex.output)
+            print('There was an error while creating the temp instance: %s' % ex.output)
             raise
 
         return instance
@@ -82,10 +76,9 @@ class TestRunner(object):
             test_command = 'python3 test_cli.py --instance %s ' % self.instance
             if self.temp_instance_required:
                 test_command += '--second-instance %s ' % self.temp_instance
-
             test_command += ' '.join(self.tests)
-            # TODO: remove -tony
-            print('Tony: test command - ' + test_command)
+
+            print('Executing tests with command: %s' % test_command)
             subprocess.check_call(TestRunner._docker_exec(test_command), shell=True)
         except subprocess.CalledProcessError as ex:
             print('Exception while executing tests: %s' % ex.output)
@@ -103,7 +96,7 @@ class TestRunner(object):
             ' '.join(
                 [
                     'python3',
-                    TestRunner._CODALAB_SERVICE_EXECUTABLE,
+                    TestRunner._CODALAB_SERVICE_SCRIPT,
                     'stop',
                     '--instance-name %s' % self.temp_instance_name,
                 ]
