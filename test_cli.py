@@ -176,7 +176,7 @@ def wait_until_substring(fp, substr):
 def _run_command(
     args,
     expected_exit_code=0,
-    max_output_chars=2048,
+    max_output_chars=4096,
     env=None,
     include_stderr=False,
     binary=False,
@@ -1378,7 +1378,8 @@ def test(ctx):
         remote_worksheet = remote.home
         # TODO: delete -tony
         print('Tony copy - remote_worksheet: ' + remote_worksheet)
-        _run_command([cl, 'work', remote_worksheet])
+        env = {'CODALAB_USERNAME': 'codalab', 'CODALAB_PASSWORD': 'codalab'}
+        _run_command([cl, 'work', remote_worksheet], env=env)
 
         def check_agree(command):
             check_equals(
