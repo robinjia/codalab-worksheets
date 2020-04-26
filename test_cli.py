@@ -202,11 +202,11 @@ def remote_instance(remote_host):
     original_worksheet = current_worksheet()
 
     # Switch to new host and log in to cache auth token
-    remote_worksheet = '%s' % remote_host
+    remote_worksheet = '%s::' % remote_host
     _run_command([cl, 'logout', remote_worksheet[:-2]])
 
     env = {'CODALAB_USERNAME': 'codalab', 'CODALAB_PASSWORD': 'codalab'}
-    _run_command([cl, 'work', remote_worksheet], env=env)
+    # _run_command([cl, 'work', remote_worksheet], env=env)
 
     yield CodaLabInstance(
         remote_host, remote_worksheet, env['CODALAB_USERNAME'], env['CODALAB_PASSWORD']
