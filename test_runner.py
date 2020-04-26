@@ -77,7 +77,7 @@ class TestRunner(object):
             test_command = 'python3 test_cli.py --instance %s ' % self.instance
             if self.temp_instance_required:
                 test_command += '--second-instance %s ' % self.temp_instance
-            test_command += ' '.join(self.tests)
+            test_command += ' '.join(list(filter(lambda test: test != 'frontend', self.tests)))
 
             print('Running backend tests with command: %s' % test_command)
             subprocess.check_call(TestRunner._docker_exec(test_command), shell=True)
