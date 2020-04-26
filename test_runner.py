@@ -27,10 +27,10 @@ class TestRunner(object):
             ports = [str(s.getsockname()[1]) for s in socks]
             for s in socks:
                 # Queue up to 5 requests
-                s.listen(5)
+                s.listen(10)
             return ports
 
-        # rest_port, http_port = get_free_ports(2)
+        rest_port, http_port = get_free_ports(2)
         instance = 'http://rest-server:%s' % rest_port
         print('Creating another CodaLab instance {} at {} for testing...'.format(name, instance))
 

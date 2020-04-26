@@ -642,7 +642,7 @@ class CodalabServiceManager(object):
 
     @staticmethod
     def wait(host, port, cmd):
-        return '/opt/wait-for-it.sh {}:{} -- {}'.format(host, port, cmd)
+        return '/opt/wait-for-it.sh --timeout=120 {}:{} -- {}'.format(host, port, cmd)
 
     def wait_mysql(self, cmd):
         return self.wait(self.args.mysql_host, self.args.mysql_port, cmd)
