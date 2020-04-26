@@ -87,6 +87,8 @@ services:
     <<: *codalab-server
     depends_on:
       - mysql
+    networks:
+      - rest-server
 
   worker-manager-cpu:
     image: codalab/server:${CODALAB_VERSION}
@@ -107,6 +109,8 @@ services:
       --memory-mb ${CODALAB_WORKER_MANAGER_AWS_DEFAULT_MEMORY_MB}
     <<: *codalab-base
     <<: *codalab-server
+    networks:
+      - rest-server
 
   worker-manager-gpu:
     image: codalab/server:${CODALAB_VERSION}
@@ -127,6 +131,8 @@ services:
       --memory-mb ${CODALAB_WORKER_MANAGER_AWS_DEFAULT_MEMORY_MB}
     <<: *codalab-base
     <<: *codalab-server
+    networks:
+      - rest-server
 
   frontend:
     image: codalab/frontend:${CODALAB_VERSION}
@@ -134,6 +140,8 @@ services:
     <<: *codalab-base
     <<: *codalab-root
     depends_on:
+      - rest-server
+    networks:
       - rest-server
 
   nginx:
@@ -148,6 +156,8 @@ services:
       - ${CODALAB_HTTP_PORT}:80
     volumes:
       - ./files/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - rest-server
 
   mysql:
     # https://hub.docker.com/_/mysql
@@ -160,6 +170,8 @@ services:
       - MYSQL_PASSWORD=${CODALAB_MYSQL_PASSWORD}
     volumes:
       - ${CODALAB_MYSQL_MOUNT}:/var/lib/mysql
+    networks:
+      - rest-server
 
   worker:
     image: codalab/worker:${CODALAB_VERSION}
@@ -180,6 +192,7 @@ services:
     networks:
       - service
       - worker
+      - rest-server
     shm_size: '500mb'
 
   worker-shared-file-system:
@@ -204,6 +217,7 @@ services:
     networks:
       - service
       - worker
+      - rest-server
 
   monitor:
     image: codalab/server:${CODALAB_VERSION}
@@ -216,6 +230,8 @@ services:
       - ${CODALAB_HOME}:${CODALAB_HOME}
       - ${CODALAB_BUNDLE_MOUNT}:${CODALAB_BUNDLE_MOUNT}
       - ${CODALAB_MONITOR_DIR}:${CODALAB_MONITOR_DIR}
+    networks:
+      - rest-server
 
 networks:
   rest-server:
