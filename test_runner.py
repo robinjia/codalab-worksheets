@@ -23,7 +23,8 @@ class TestRunner(object):
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.bind(('', 0))
             port = str(s.getsockname()[1])
-            s.close()
+            # Queue up to 5 requests
+            s.listen(5)
             return port
 
         rest_port = get_free_port()
