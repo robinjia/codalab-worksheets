@@ -176,7 +176,7 @@ def wait_until_substring(fp, substr):
 def _run_command(
     args,
     expected_exit_code=0,
-    max_output_chars=9086,
+    max_output_chars=4096,
     env=None,
     include_stderr=False,
     binary=False,
@@ -366,7 +366,7 @@ class TestModule(object):
         tests should be a list of strings, each of which is either 'all',
         'default', or the name of an existing test module.
 
-        Instances should be a CodaLab instance to connect to like:
+        instance should be a CodaLab instance to connect. The following are some examples:
             - main
             - localhost
             - http://server-domain:2900
