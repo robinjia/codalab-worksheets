@@ -81,8 +81,8 @@ class TestRunner(object):
             print('Running backend tests with command: %s' % test_command)
             subprocess.check_call(TestRunner._docker_exec(test_command), shell=True)
 
-            if 'frontend' in self.tests:
-                self._run_frontend_tests()
+            # Run frontend tests
+            self._run_frontend_tests()
 
         except subprocess.CalledProcessError as ex:
             print('Exception while executing tests: %s' % ex.output)
@@ -92,6 +92,9 @@ class TestRunner(object):
         return success
 
     def _run_frontend_tests(self):
+        if 'frontend' not in self.tests:
+            return
+
         # TODO: when more frontend tests are added, execute it from here
         # Run Selenium UI tests
         subprocess.check_call('python3 tests/ui/ui_tester.py --headless', shell=True)
