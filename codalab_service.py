@@ -268,6 +268,18 @@ CODALAB_ARGUMENTS = [
         default=2048,
         help='Default memory (in MB) for each worker in the AWS Batch Worker Manager',
     ),
+    CodalabArg(
+        name='docker_client_timeout',
+        type=int,
+        default=120,
+        help='Docker client timeout (in seconds)',
+    ),
+    CodalabArg(
+        name='compose_http_timeout',
+        type=int,
+        default=120,
+        help='Docker Compose HTTP timeout (in seconds)',
+    ),
     ### Public workers
     CodalabArg(name='public_workers', help='Comma-separated list of worker ids to monitor'),
 ]
