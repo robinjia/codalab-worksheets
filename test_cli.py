@@ -1377,8 +1377,8 @@ def test(ctx):
 
         def compare_output(command):
             check_equals(
-                _run_command(command + ['-w', remote_worksheet]),
                 _run_command(command + ['-w', source_worksheet]),
+                _run_command(command + ['-w', remote_worksheet]),
             )
 
         remote_worksheet = remote.home
