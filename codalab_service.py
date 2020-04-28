@@ -45,6 +45,9 @@ SERVICE_TO_IMAGE = {
     'worker': 'worker',
 }
 
+# Max timeout in seconds to wait for request to a service to get through
+SERVICE_REQUEST_TIMEOUT_SECONDS = 600
+
 
 def ensure_directory_exists(path):
     try:
@@ -272,14 +275,14 @@ CODALAB_ARGUMENTS = [
         name='compose_http_timeout',
         env_var='COMPOSE_HTTP_TIMEOUT',
         type=int,
-        default=120,
+        default=SERVICE_REQUEST_TIMEOUT_SECONDS,
         help='Docker Compose HTTP timeout (in seconds)',
     ),
     CodalabArg(
         name='docker_client_timeout',
         env_var='DOCKER_CLIENT_TIMEOUT',
         type=int,
-        default=120,
+        default=SERVICE_REQUEST_TIMEOUT_SECONDS,
         help='Docker client timeout (in seconds)',
     ),
     ### Public workers
@@ -656,7 +659,9 @@ class CodalabServiceManager(object):
 
     @staticmethod
     def wait(host, port, cmd):
-        return '/opt/wait-for-it.sh {}:{} -- {}'.format(host, port, cmd)
+        return '/opt/wait-for-it.sh --timeout={} {}:{} -- {}'.format(
+            SERVICE_REQUEST_TIMEOUT_SECONDS, host, port, cmd
+        )
 
     def wait_mysql(self, cmd):
         return self.wait(self.args.mysql_host, self.args.mysql_port, cmd)
