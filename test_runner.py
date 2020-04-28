@@ -18,7 +18,7 @@ class TestRunner(object):
         return 'docker exec -it codalab_rest-server_1 /bin/bash -c "{}"'.format(command)
 
     @staticmethod
-    def _create_temp_instance(name, version, rest_port):
+    def _create_temp_instance(name, version):
         def get_free_ports(num_ports):
             socks = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in range(num_ports)]
             for s in socks:
@@ -26,7 +26,7 @@ class TestRunner(object):
                 s.bind(('', 0))
             ports = [str(s.getsockname()[1]) for s in socks]
             for s in socks:
-                # Queue up to 5 requests
+                # Queue up to 10 requests
                 s.listen(10)
             return ports
 
@@ -72,7 +72,7 @@ class TestRunner(object):
                 random.choice(string.digits) for _ in range(8)
             )
             self.temp_instance = TestRunner._create_temp_instance(
-                self.temp_instance_name, args.version, args.temp_rest_port
+                self.temp_instance_name, args.version
             )
 
     def run(self):
@@ -139,12 +139,6 @@ if __name__ == '__main__':
         type=str,
         help='CodaLab instance to run tests against, defaults to "http://rest-server:2900"',
         default='http://rest-server:2900',
-    )
-    parser.add_argument(
-        '--temp-rest-port',
-        type=int,
-        help='Rest port for temp instance, defaults to 3000',
-        default=58135,
     )
     parser.add_argument(
         'tests',
