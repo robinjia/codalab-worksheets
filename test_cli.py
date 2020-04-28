@@ -1404,7 +1404,7 @@ def test(ctx):
         uuid = _run_command([cl, 'upload', test_path('')])
         _run_command([cl, 'add', 'bundle', uuid, '--dest-worksheet', source_worksheet])
         compare_output([cl, 'info', '-f', 'data_hash,name', uuid])
-        compare_output([cl, 'cat', uuid])
+        # compare_output([cl, 'cat', uuid])
 
         # Upload to remote, transfer to local (metadata only)
         _run_command([cl, 'work', remote_worksheet])
