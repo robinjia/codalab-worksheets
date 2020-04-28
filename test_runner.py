@@ -45,7 +45,7 @@ class TestRunner(object):
                         '--instance-name %s' % name,
                         '--rest-port %s' % rest_port,
                         '--version %s' % version,
-                        '--services init rest-server bundle-manager',
+                        '--services init rest-server bundle-manager worker',
                     ]
                 ),
                 shell=True,
