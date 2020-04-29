@@ -39,8 +39,8 @@ jobs:
         - docker restart codalab_worker_1 && python3 test_runner.py --version ${TRAVIS_BRANCH} run
         - docker stop codalab_worker_1
         - python3 codalab_service.py start --services init worker --version ${TRAVIS_BRANCH} --shared-file-system
-        # Also run the frontend tests this time
-        - python3 test_runner.py --version ${TRAVIS_BRANCH} basic run read write kill resources netcat netcurl workers frontend
+        # Also run the frontend tests in this iteration of testing
+        - python3 test_runner.py --version ${TRAVIS_BRANCH} frontend basic run read write kill resources netcat netcurl workers
     - stage: deploy
       script: echo "Deploying"
       language: python

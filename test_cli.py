@@ -1396,7 +1396,7 @@ def test(ctx):
         uuid = _run_command([cl, 'upload', test_path('')])
         _run_command([cl, 'add', 'bundle', uuid, '--dest-worksheet', remote_worksheet])
         compare_output([cl, 'info', '-f', 'data_hash,name', uuid])
-        # TODO: this is not working!
+        # TODO: `cl cat` is not working even with the bundle available
         # compare_output([cl, 'cat', uuid])
 
         # Upload to remote, transfer to local

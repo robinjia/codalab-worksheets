@@ -1,3 +1,8 @@
+"""
+Script to run both frontend and backend tests for CodaLab. Depending on the test modules, this script
+will also create a second instance of CodaLab to test against.
+"""
+
 from test_cli import TestModule
 
 import argparse
@@ -101,7 +106,7 @@ class TestRunner(object):
         if 'frontend' not in self.tests:
             return
 
-        # TODO: when more frontend tests are added, execute it from here
+        # Execute front end tests here
         print('Running frontend tests...')
         # Run Selenium UI tests
         subprocess.check_call('python3 tests/ui/ui_tester.py --headless', shell=True)
