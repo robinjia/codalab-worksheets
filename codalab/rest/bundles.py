@@ -332,6 +332,7 @@ def _update_bundles():
 
     # Get updated bundles
     bundles_dict = get_bundle_infos(bundle_uuids)
+    
     # Create list of bundles in original order
     # Need to check if the UUID is in the dict, since there is a chance that a bundle is deleted
     # right after being updated.

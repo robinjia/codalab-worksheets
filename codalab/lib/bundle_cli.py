@@ -1441,7 +1441,7 @@ class BundleCLI(object):
                 file=self.stdout,
             )
             return
-        
+
         print("Copying %s..." % source_desc, file=self.stdout)
 
         # If bundle contents don't exist, finish after just copying metadata
