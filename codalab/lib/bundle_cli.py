@@ -1444,7 +1444,7 @@ class BundleCLI(object):
 
         print("Copying %s..." % source_desc, file=self.stdout)
 
-        # If bundle contents don't exist, finish after just copying metadata
+        # Fetch bundle contents from source client
         try:
             target_info = source_client.fetch_contents_info(BundleTarget(source_bundle_uuid, ''))
             has_contents = True
@@ -1462,6 +1462,8 @@ class BundleCLI(object):
                 'state_on_success': None if has_contents else source_info['state'],
             },
         )
+
+        # If bundle contents don't exist, finish after just copying metadata
         if not has_contents:
             return
 
